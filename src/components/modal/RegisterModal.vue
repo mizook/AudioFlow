@@ -24,81 +24,117 @@
             leave-from="opacity-100 scale-100"
             leave-to="opacity-0 scale-95"
           >
-            <DialogPanel class="flex w-full max-w-2xl transform overflow-hidden rounded-2xl bg-black p-6 shadow-xl transition-all">
-              
+            <DialogPanel
+              class="flex w-full max-w-2xl transform overflow-hidden rounded-2xl bg-black p-6 shadow-xl transition-all"
+            >
               <!-- Bloque Izquierdo -->
               <div class="w-1/2 pr-4 gap-5">
-                <DialogTitle as="h3" class="text-lg font-medium leading-6 text-white mb-4">¡Regístrate en AudioFlow!</DialogTitle>
+                <DialogTitle
+                  as="h3"
+                  class="text-lg font-medium leading-6 text-white mb-4"
+                  >¡Regístrate en AudioFlow!</DialogTitle
+                >
                 <form @submit.prevent="submitForm" class="mt-6">
                   <div class="mt-4">
-                    <label for="username" class="block text-sm text-gray-400">Nombre de usuario</label>
-                    <input 
-                      type="text" 
-                      id="username" 
-                      name="username" 
+                    <label for="username" class="block text-sm text-gray-400"
+                      >Nombre de usuario</label
+                    >
+                    <input
+                      type="text"
+                      id="username"
+                      name="username"
                       autocomplete="off"
                       placeholder="@username"
-                      v-model="formData.username" 
-                      :class="{ 'border-red-500': errors.username }" 
-                      class="w-[90%] h-10 my-2 py-3 px-4 block border-6 bg-gray-950 text-white border-gray-200 rounded-md text-sm focus:border-green-500 focus:ring-green-500 shadow-sm ">
-                    <p v-if="errors.username" class="text-xs text-red-600 mt-2">{{ errors.username[0] }}</p>
+                      v-model="formData.username"
+                      :class="{ 'border-red-500': errors.username }"
+                      class="w-[90%] h-10 my-2 py-3 px-4 block border-6 bg-gray-950 text-white border-gray-200 rounded-md text-sm focus:border-green-500 focus:ring-green-500 shadow-sm"
+                    />
+                    <p v-if="errors.username" class="text-xs text-red-600 mt-2">
+                      {{ errors.username[0] }}
+                    </p>
                   </div>
 
                   <div class="mt-4">
-                    <label for="email" class="block text-sm text-gray-400">Correo electrónico</label>
-                    <input 
-                      type="text" 
-                      id="email" 
-                      name="email" 
+                    <label for="email" class="block text-sm text-gray-400"
+                      >Correo electrónico</label
+                    >
+                    <input
+                      type="text"
+                      id="email"
+                      name="email"
                       autocomplete="off"
                       placeholder="ejemplo@correo"
-                      v-model="formData.email" 
+                      v-model="formData.email"
                       :class="{ 'border-red-500': errors.email }"
-                      class="w-[90%] h-10 my-2 py-3 px-4 block border-6 bg-gray-950 text-white border-gray-200 rounded-md text-sm focus:border-green-500 focus:ring-green-500 shadow-sm">
-                    <p v-if="errors.email" class="text-xs text-red-600 mt-2">{{ errors.email[0] }}</p>
+                      class="w-[90%] h-10 my-2 py-3 px-4 block border-6 bg-gray-950 text-white border-gray-200 rounded-md text-sm focus:border-green-500 focus:ring-green-500 shadow-sm"
+                    />
+                    <p v-if="errors.email" class="text-xs text-red-600 mt-2">
+                      {{ errors.email[0] }}
+                    </p>
                   </div>
 
                   <div class="mt-4">
-                    <label for="password" class="block text-sm text-gray-400">Contraseña</label>
-                    <input 
-                      type="password" 
-                      id="password" 
-                      name="password" 
+                    <label for="password" class="block text-sm text-gray-400"
+                      >Contraseña</label
+                    >
+                    <input
+                      type="password"
+                      id="password"
+                      name="password"
                       autocomplete="off"
                       placeholder="contraseña"
-                      v-model="formData.password" 
+                      v-model="formData.password"
                       :class="{ 'border-red-500': errors.password }"
-                      class="w-[90%] h-10 my-2 py-3 px-4 block border-6 bg-gray-950 text-white border-gray-200 rounded-md text-sm focus:border-green-500 focus:ring-green-500 shadow-sm">
-                    <p v-if="errors.password" class="text-xs text-red-600 mt-2">{{ errors.password[0] }}</p>
+                      class="w-[90%] h-10 my-2 py-3 px-4 block border-6 bg-gray-950 text-white border-gray-200 rounded-md text-sm focus:border-green-500 focus:ring-green-500 shadow-sm"
+                    />
+                    <p v-if="errors.password" class="text-xs text-red-600 mt-2">
+                      {{ errors.password[0] }}
+                    </p>
                   </div>
 
                   <div class="mt-4">
-                    <label for="confirmPassword" class="block text-sm text-gray-400">Confirmar contraseña</label>
-                    <input 
-                      type="password" 
-                      id="confirmPassword" 
-                      name="confirmPassword" 
+                    <label
+                      for="confirmPassword"
+                      class="block text-sm text-gray-400"
+                      >Confirmar contraseña</label
+                    >
+                    <input
+                      type="password"
+                      id="confirmPassword"
+                      name="confirmPassword"
                       autocomplete="off"
                       placeholder="contraseña"
-                      v-model="formData.confirmPassword" 
+                      v-model="formData.confirmPassword"
                       :class="{ 'border-red-500': errors.confirmPassword }"
-                      class="w-[90%] h-10 my-2 py-3 px-4 block border-6 bg-gray-950 text-white border-gray-200 rounded-md text-sm focus:border-green-500 focus:ring-green-500 shadow-sm">
-                    <p v-if="errors.confirmPassword" class="text-xs text-red-600 mt-2">{{ errors.confirmPassword }}</p>
+                      class="w-[90%] h-10 my-2 py-3 px-4 block border-6 bg-gray-950 text-white border-gray-200 rounded-md text-sm focus:border-green-500 focus:ring-green-500 shadow-sm"
+                    />
+                    <p
+                      v-if="errors.confirmPassword"
+                      class="text-xs text-red-600 mt-2"
+                    >
+                      {{ errors.confirmPassword }}
+                    </p>
                   </div>
 
                   <div class="mt-8 flex justify-center pr-8">
-                    <button type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white hover:text-black hover:bg-green-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
-                        Enviar
+                    <button
+                      type="submit"
+                      class="inline-flex justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white hover:text-black hover:bg-green-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                    >
+                      Enviar
                     </button>
                   </div>
-              </form>
-            </div>
-              
-            <!-- Bloque Derecho -->
-            <div class="w-1/2 flex items-center justify-center">
-              <img src="/images/icons/audioflow-logo.png" alt="Icono de AudioFlow" class="w-1/2">
-            </div>
-              
+                </form>
+              </div>
+
+              <!-- Bloque Derecho -->
+              <div class="w-1/2 flex items-center justify-center">
+                <img
+                  src="/images/icons/audioflow-logo.png"
+                  alt="Icono de AudioFlow"
+                  class="w-1/2"
+                />
+              </div>
             </DialogPanel>
           </TransitionChild>
         </div>
@@ -107,41 +143,44 @@
   </TransitionRoot>
 </template>
 
-<script setup lang="ts">
-import { ref } from 'vue';
-import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
+<script setup>
+import { ref } from "vue";
+import {
+  TransitionRoot,
+  TransitionChild,
+  Dialog,
+  DialogPanel,
+  DialogTitle,
+} from "@headlessui/vue";
 
-import { mapZodErrors } from '@/utils/utils';
+import { mapZodErrors } from "@/utils/utils";
 
-import { useMainStore } from '@/stores/main';
-import { usePlayerStore } from '@/stores/player';
+import { useMainStore } from "@/stores/main";
+import { usePlayerStore } from "@/stores/player";
 
-import { RegisterForm, FormErrors } from '@/interfaces'
-import { loadQueue, setSong } from '@/firestore';
-import { register as registerUser, login as loginUser, fetchUserPlaylists } from '@/backend';
-
-
-import { showSuccessToast, showErrorToast } from '@/utils/toast';
+import { showSuccessToast, showErrorToast } from "@/utils/toast";
 
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
 
-const isOpen = ref<boolean>(true);
-const emits = defineEmits(['close']);
-let errors = ref<FormErrors>({});
-const formData = ref<RegisterForm>({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
+const isOpen = ref(true);
+const emits = defineEmits(["close"]);
+let errors = ref({});
+const formData = ref({
+  username: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
 });
 
-function closeModal(): void {
+function closeModal() {
   isOpen.value = false;
-  setTimeout(() => { emits('close') }, 300);
+  setTimeout(() => {
+    emits("close");
+  }, 300);
 }
 
-async function submitForm(): Promise<void> {
+async function submitForm() {
   errors.value = {};
 
   if (formData.value.password !== formData.value.confirmPassword) {
@@ -150,40 +189,38 @@ async function submitForm(): Promise<void> {
   }
 
   try {
-    await registerUser(formData.value);
+    // await registerUser(formData.value);
     closeModal();
-    
+
     try {
-      const user = await loginUser({
-        email: formData.value.email,
-        password: formData.value.password
-      });
+      // const user = await loginUser({
+      //   email: formData.value.email,
+      //   password: formData.value.password,
+      // });
       mainStore.loginUser(user);
       playerStore.storePlayer(user.player);
 
-      const userPlaylist = await fetchUserPlaylists();
-      mainStore.loadMyPlaylists(userPlaylist)
-      
-      if(playerStore.player.currentSong) setSong(playerStore.player.id, playerStore.player.currentSong);
+      // const userPlaylist = await fetchUserPlaylists();
+      mainStore.loadMyPlaylists(userPlaylist);
+
+      // if(playerStore.player.currentSong) setSong(playerStore.player.id, playerStore.player.currentSong);
       showSuccessToast("Inicio de sesión exitoso");
-
-    } catch (error: any) {
+    } catch (error) {
       showErrorToast("Error al iniciar sesión");
-    };
-    
-  } catch (error: any) {
-      if (error.response && error.response.data.error) {
-        const mappedErrors = await mapZodErrors(error);
-        errors.value = mappedErrors;
-      };
+    }
+  } catch (error) {
+    if (error.response && error.response.data.error) {
+      const mappedErrors = await mapZodErrors(error);
+      errors.value = mappedErrors;
+    }
 
-      if (formData.value.password !== formData.value.confirmPassword ) {
-        errors.value.confirmPassword = "Las contraseñas no coinciden";
-      };
+    if (formData.value.password !== formData.value.confirmPassword) {
+      errors.value.confirmPassword = "Las contraseñas no coinciden";
+    }
 
-      if (formData.value.confirmPassword == "" ) {
-        errors.value.confirmPassword = "Este campo no puede ser vacío";
-      };
-    };
-};
+    if (formData.value.confirmPassword == "") {
+      errors.value.confirmPassword = "Este campo no puede ser vacío";
+    }
+  }
+}
 </script>

@@ -4,61 +4,67 @@
     :class="{ 'opacity-100': !isFetching, 'opacity-0': isFetching }"
   >
     <h1 class="text-white text-2xl font-semibold pl-2">
-      ¡Despliegue automático!
+      ¡Bienvenido a AudioFlow!
     </h1>
 
     <div class="pt-4 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-y-12">
-      <SongCard v-for="song in mainStore.systemSongs" :song="song" />
+      <SongCard v-for="song in songs" :song="song" />
     </div>
   </div>
   <div
     role="status"
-    class="flex items-center justify-center h-[33vh] xl:h-[55vh] transition-opacity duration-300"
+    class="flex items-center justify-center transition-opacity duration-300"
     :class="{ visible: isFetching, hidden: !isFetching }"
   >
     <Loader />
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
+import { ref } from "vue";
+
 import Loader from "@/components/Loader.vue";
-import { onMounted, ref } from "vue";
 import SongCard from "@/components/SongCard.vue";
 
 import { useMainStore } from "@/stores/main";
 import { usePlayerStore } from "@/stores/player";
-
-import { setSong } from "@/firestore";
-import { fetchSongs } from "@/backend";
 
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
 
 const isFetching = ref(true);
 
-const getSongs = async () => {
-  try {
-    const response = await fetchSongs();
-    isFetching.value = false;
-    mainStore.loadSongs(response.songs);
+const songs = [
+  {
+    user_id: "1",
+    id: "1",
+    name: "Darkera",
+    artist: "Easykid",
+    duration: 180,
+    coverURL: "/images/albumCovers/darkera.jpg",
+    audioURL: "/songs/darkera.mp3",
+  },
+  {
+    user_id: "1",
+    id: "2",
+    name: "Un Preview",
+    artist: "Bad Bunny",
+    duration: 180,
+    coverURL: "/images/albumCovers/un-preview.jpg",
+    audioURL: "/songs/un-preview.mp3",
+  },
+  {
+    user_id: "1",
+    id: "3",
+    name: "Smoking Out The Window",
+    artist: "Silk Sonic, Bruno Mars, Anderson .Paak",
+    duration: 180,
+    coverURL: "/images/albumCovers/smoking-out-the-window.jpg",
+    audioURL: "/songs/smoking-out-the-window.mp3",
+  },
+];
 
-    if (
-      playerStore.player?.currentSong === null ||
-      playerStore.player?.currentSong == undefined
-    ) {
-      playerStore.player.currentTime = 0;
-      playerStore.player.currentSong = mainStore.systemSongs[0];
-      if (mainStore.user)
-        setSong(playerStore.player.id, mainStore.systemSongs[0]);
-    }
-  } catch (error) {
-    isFetching.value = false;
-    console.error("Hubo un error al hacer fetch:", error);
-  }
-};
-
-onMounted(async () => {
-  mainStore.clearSystemSongs();
-  getSongs();
-});
+setTimeout(() => {
+  isFetching.value = false;
+}, 2000);
 </script>
