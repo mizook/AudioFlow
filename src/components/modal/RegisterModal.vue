@@ -153,19 +153,11 @@ import {
   DialogTitle,
 } from "@headlessui/vue";
 
-import { mapZodErrors } from "@/utils/utils";
-
-import { useMainStore } from "@/stores/main";
-import { usePlayerStore } from "@/stores/player";
-
-import { showSuccessToast, showErrorToast } from "@/utils/toast";
-
-const mainStore = useMainStore();
-const playerStore = usePlayerStore();
+import { showErrorToast } from "@/utils/toast";
 
 const isOpen = ref(true);
 const emits = defineEmits(["close"]);
-let errors = ref({});
+
 const formData = ref({
   username: "",
   email: "",
@@ -181,46 +173,6 @@ function closeModal() {
 }
 
 async function submitForm() {
-  errors.value = {};
-
-  if (formData.value.password !== formData.value.confirmPassword) {
-    errors.value.confirmPassword = "Las contraseñas no coinciden";
-    return;
-  }
-
-  try {
-    // await registerUser(formData.value);
-    closeModal();
-
-    try {
-      // const user = await loginUser({
-      //   email: formData.value.email,
-      //   password: formData.value.password,
-      // });
-      mainStore.loginUser(user);
-      playerStore.storePlayer(user.player);
-
-      // const userPlaylist = await fetchUserPlaylists();
-      mainStore.loadMyPlaylists(userPlaylist);
-
-      // if(playerStore.player.currentSong) setSong(playerStore.player.id, playerStore.player.currentSong);
-      showSuccessToast("Inicio de sesión exitoso");
-    } catch (error) {
-      showErrorToast("Error al iniciar sesión");
-    }
-  } catch (error) {
-    if (error.response && error.response.data.error) {
-      const mappedErrors = await mapZodErrors(error);
-      errors.value = mappedErrors;
-    }
-
-    if (formData.value.password !== formData.value.confirmPassword) {
-      errors.value.confirmPassword = "Las contraseñas no coinciden";
-    }
-
-    if (formData.value.confirmPassword == "") {
-      errors.value.confirmPassword = "Este campo no puede ser vacío";
-    }
-  }
+  showErrorToast("Registro no implementado en esta versión de la app :(");
 }
 </script>
