@@ -95,11 +95,7 @@ import {
   DialogTitle,
 } from "@headlessui/vue";
 
-import { showSuccessToast } from "@/utils/toast";
-
-import { useMainStore } from "@/stores/main";
-
-const mainStore = useMainStore();
+import { showErrorToast } from "@/utils/toast";
 
 const isOpen = ref(true);
 const isLoading = ref(false);
@@ -119,19 +115,8 @@ function closeModal() {
 }
 
 async function submitForm() {
-  errors.value = "";
-  isLoading.value = true;
+  showErrorToast("No implementado en esta versión de la app :(", 2000);
 
-  try {
-    // const response = await createPlaylist(formData.value);
-    mainStore.addSystemPlaylist(response.playlist);
-    closeModal();
-    showSuccessToast("Playlist creada con éxito");
-  } catch (error) {
-    if (error.response.data && error.response.data.issues) {
-      errors.value = error.response.data.issues[0].message;
-    }
-    isLoading.value = false;
-  }
+  closeModal();
 }
 </script>

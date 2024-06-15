@@ -136,14 +136,9 @@ import {
   DialogTitle,
 } from "@headlessui/vue";
 
-import { mapZodErrors } from "@/utils/utils";
-import { showSuccessToast } from "@/utils/toast";
+import { showErrorToast } from "@/utils/toast";
 
-import { useMainStore } from "@/stores/main";
-
-const mainStore = useMainStore();
-
-const isOpen = ref < boolean > true;
+const isOpen = ref(true);
 const emits = defineEmits(["close"]);
 const errors = ref({});
 const formData = ref({
@@ -160,20 +155,8 @@ function closeModal() {
 }
 
 async function submitForm() {
-  errors.value = {};
+  showErrorToast("No implementado en esta versión de la app :(", 2000);
 
-  try {
-    // await changeUserPassword(formData.value);
-    closeModal();
-    showSuccessToast("Contraseña actualizada con éxito", 2000);
-    setTimeout(() => {
-      mainStore.logoutUser();
-    }, 2000);
-  } catch (error) {
-    if (error.response && error.response.data.error) {
-      const mappedErrors = await mapZodErrors(error);
-      errors.value = mappedErrors;
-    }
-  }
+  closeModal();
 }
 </script>

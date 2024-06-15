@@ -157,6 +157,7 @@ import { showErrorToast } from "@/utils/toast";
 
 const isOpen = ref(true);
 const emits = defineEmits(["close"]);
+const errors = ref({});
 
 const formData = ref({
   username: "",
@@ -173,6 +174,8 @@ function closeModal() {
 }
 
 async function submitForm() {
-  showErrorToast("Registro no implementado en esta versión de la app :(");
+  showErrorToast("No implementado en esta versión de la app :(", 2000);
+
+  closeModal();
 }
 </script>

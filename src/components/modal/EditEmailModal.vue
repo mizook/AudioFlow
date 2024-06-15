@@ -108,8 +108,7 @@ import {
   DialogTitle,
 } from "@headlessui/vue";
 
-import { mapZodErrors } from "@/utils/utils";
-import { showSuccessToast, showErrorToast } from "@/utils/toast";
+import { showErrorToast } from "@/utils/toast";
 
 import { useMainStore } from "@/stores/main";
 
@@ -131,25 +130,8 @@ function closeModal() {
 }
 
 async function submitForm() {
-  errors.value = {};
+  showErrorToast("No implementado en esta versión de la app :(", 2000);
 
-  try {
-    // await changeUserEmail(formData.value);
-    if (formData.value.email == mainStore.$state.user?.email) {
-      showErrorToast("Tu email es el mismo que el anterior");
-      return;
-    }
-
-    closeModal();
-    showSuccessToast("Correo electrónico actualizado", 2000);
-    setTimeout(() => {
-      mainStore.logoutUser();
-    }, 2000);
-  } catch (error) {
-    if (error.response && error.response.data.error) {
-      const mappedErrors = await mapZodErrors(error);
-      errors.value = mappedErrors;
-    }
-  }
+  closeModal();
 }
 </script>

@@ -1,22 +1,23 @@
 <template>
-  <div
-    class="p-8 transition-opacity duration-500"
-    :class="{ 'opacity-100': !isFetching, 'opacity-0': isFetching }"
-  >
-    <h1 class="text-white text-2xl font-semibold pl-2">
+  <div class="p-8 transition-opacity duration-500">
+    <h1 v-if="!isFetching" class="text-white text-2xl font-semibold pl-2">
       ¡Bienvenido a AudioFlow!
     </h1>
 
-    <div class="pt-4 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-y-12">
+    <div
+      v-if="isFetching"
+      role="status"
+      class="flex items-center justify-center transition-opacity duration-300 h-[70vh]"
+    >
+      <Loader />
+    </div>
+
+    <div
+      v-if="!isFetching"
+      class="pt-4 grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-y-12"
+    >
       <SongCard v-for="song in songs" :song="song" />
     </div>
-  </div>
-  <div
-    role="status"
-    class="flex items-center justify-center transition-opacity duration-300"
-    :class="{ visible: isFetching, hidden: !isFetching }"
-  >
-    <Loader />
   </div>
 </template>
 
@@ -63,6 +64,8 @@ const songs = [
     audioURL: "/songs/smoking-out-the-window.mp3",
   },
 ];
+
+playerStore.playSong(songs[0]);
 
 setTimeout(() => {
   isFetching.value = false;

@@ -128,29 +128,48 @@ function closeModal() {
   }, 300);
 }
 
+const loginUser = (data) => {
+  if (data.email === "guest" && data.password === "") {
+    showSuccessToast("Inicio de sesión exitoso", 2000);
+    return {
+      user: {
+        username: "guest",
+        id: 1,
+        name: "guest",
+        email: "guest",
+        player: {
+          id: 1,
+          name: "guestPlayer",
+          volume: 100,
+          isPlaying: false,
+          currentSong: {
+            user_id: "1",
+            id: "1",
+            name: "Darkera",
+            artist: "Easykid",
+            duration: 180,
+            coverURL: "/images/albumCovers/darkera.jpg",
+            audioURL: "/songs/darkera.mp3",
+          },
+          songs: [],
+        },
+      },
+      token: "token",
+    };
+  } else {
+    errors.value = "Usuario o contraseña incorrectos";
+  }
+};
+
 async function submitForm() {
-  errors.value = "";
+  const data = loginUser(formData.value);
 
-  try {
-    // const user = await loginUser(formData.value);
-    mainStore.loginUser(user);
-
-    // user.player.queue = await loadQueue(user.player.id);
-    playerStore.storePlayer(user.player);
-
-    // const userPlaylists = await fetchUserPlaylists();
-    mainStore.loadMyPlaylists(userPlaylists);
+  if (data) {
+    mainStore.loginUser(data);
+    playerStore.storePlayer(data.user.player);
 
     closeModal();
     showSuccessToast("Inicio de sesión exitoso");
-  } catch (error) {
-    if (error.response) {
-      if (error.response.status == 400) {
-        errors.value = "Ingrese los campos correctamente";
-        return;
-      }
-      errors.value = error.response.data.message;
-    }
   }
 }
 </script>

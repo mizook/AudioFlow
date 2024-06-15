@@ -114,25 +114,8 @@ function closeModal() {
 }
 
 async function submitForm() {
-  errors.value = "";
-  isLoading.value = true;
+  showErrorToast("No implementado en esta versión de la app :(", 2000);
 
-  if (selectedPlaylist.value === null) {
-    showErrorToast("Debes seleccionar una playlist!");
-    return;
-  }
-
-  try {
-    if (selectedPlaylist.value !== null && props.song) {
-      // await addSongToPlaylist(selectedPlaylist.value.id, props.song.id.toString());
-      // const userPlaylists = await fetchUserPlaylists();
-      mainStore.loadMyPlaylists(userPlaylists);
-      closeModal();
-      showSuccessToast("Canción agregada con éxito");
-    }
-  } catch (error) {
-    errors.value = error.response.data.message;
-    isLoading.value = false;
-  }
+  closeModal();
 }
 </script>

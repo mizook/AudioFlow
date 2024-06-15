@@ -35,7 +35,6 @@
           <RouterLink to="/profile">
             <MenuItem v-slot="{ active }" pageUrl="/profile">
               <button
-                @click="mainStore.verifyTokenValidity()"
                 :class="[
                   active ? 'bg-gray-900 text-white' : 'text-gray-300',
                   'group flex w-full items-center px-2 py-2 text-sm border-b border-gray-700',
@@ -101,7 +100,6 @@ const playerStore = usePlayerStore();
 let showEditPasswordModal = ref(false);
 
 function openChangePasswordModal() {
-  mainStore.verifyTokenValidity();
   showEditPasswordModal.value = true;
 }
 

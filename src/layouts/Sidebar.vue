@@ -136,12 +136,10 @@ let showUploadSongModal = ref(false);
 let showCreatePlaylistModal = ref(false);
 
 function openUploadSongModal() {
-  mainStore.verifyTokenValidity();
   showUploadSongModal.value = true;
 }
 
 function openCreatePlaylistModal() {
-  mainStore.verifyTokenValidity();
   showCreatePlaylistModal.value = true;
 }
 

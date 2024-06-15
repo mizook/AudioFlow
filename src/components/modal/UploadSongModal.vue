@@ -247,45 +247,8 @@ const updateCoverArt = (event) => {
 };
 
 async function uploadSong() {
-  errors.value = {};
+  showErrorToast("No implementado en esta versión de la app :(", 2000);
 
-  if (
-    formData.value.name == "" ||
-    formData.value.artist == "" ||
-    !formData.value.audio_file?.name ||
-    !formData.value.cover_art?.name
-  ) {
-    showErrorToast("No pueden haber campos vacíos");
-    return;
-  }
-
-  const uploadSongToast = toast.loading("Subiendo canción...", {
-    position: "bottom-right",
-    theme: "dark",
-  });
-  isUploading.value = true;
-
-  try {
-    // const response = await userUploadSong(formData.value)
-    toast.update(uploadSongToast, {
-      render: "Canción subida exitosamente",
-      autoClose: 3000,
-      closeOnClick: true,
-      closeButton: true,
-      type: "success",
-      isLoading: false,
-    });
-    mainStore.addSystemSong(response.song);
-    closeModal();
-  } catch (error) {
-    toast.remove(uploadSongToast);
-    showErrorToast("Error al subir la canción");
-    if (error.response && error.response.data.error) {
-      const mappedErrors = await mapZodErrors(error);
-      errors.value = mappedErrors;
-    }
-    isUploading.value = false;
-  }
+  closeModal();
 }
 </script>
-@/backend/song

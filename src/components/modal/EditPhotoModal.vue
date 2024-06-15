@@ -138,7 +138,7 @@ import {
 import Avatar from "vue-avatar/src/Avatar.vue";
 
 import "vue3-toastify/dist/index.css";
-import { toast } from "vue3-toastify";
+
 import { showErrorToast } from "@/utils/toast";
 
 import { useMainStore } from "@/stores/main";
@@ -148,7 +148,7 @@ const mainStore = useMainStore();
 const isOpen = ref(true);
 const emits = defineEmits(["close"]);
 const errors = ref({});
-const previewImageUrl = (ref < string) | (null > null);
+const previewImageUrl = ref("") || null;
 const formData = ref({
   file: null,
 });
@@ -184,36 +184,8 @@ function handlePhotoFileChange(event) {
 }
 
 async function uploadPhoto() {
-  errors.value = {};
+  showErrorToast("No implementado en esta versión de la app :(", 2000);
 
-  if (!formData.value.file?.name) {
-    showErrorToast("No hay una foto seleccionada");
-    return;
-  }
-  const uploadPhotoToast = toast.loading("Subiendo imagen...", {
-    position: "bottom-right",
-    theme: "dark",
-  });
-  isUploading.value = true;
-
-  try {
-    // const response = await changeUserPhoto(formData.value)
-    toast.update(uploadPhotoToast, {
-      render: "Imagen subida exitosamente",
-      autoClose: 3000,
-      closeOnClick: true,
-      closeButton: true,
-      type: "success",
-      isLoading: false,
-    });
-
-    mainStore.$state.user = response.userWithId;
-    closeModal();
-  } catch (error) {
-    toast.remove(uploadPhotoToast);
-    showErrorToast("Error al subir la imagen");
-    errors.value = error.response.data.error;
-    isUploading.value = false;
-  }
+  closeModal();
 }
 </script>
