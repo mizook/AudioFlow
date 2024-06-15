@@ -27,10 +27,8 @@ import { ref } from "vue";
 import Loader from "@/components/Loader.vue";
 import SongCard from "@/components/SongCard.vue";
 
-import { useMainStore } from "@/stores/main";
 import { usePlayerStore } from "@/stores/player";
 
-const mainStore = useMainStore();
 const playerStore = usePlayerStore();
 
 const isFetching = ref(true);
@@ -63,11 +61,38 @@ const songs = [
     coverURL: "/images/albumCovers/smoking-out-the-window.jpg",
     audioURL: "/songs/smoking-out-the-window.mp3",
   },
+  {
+    user_id: "1",
+    id: "4",
+    name: "Baila Morena",
+    artist: "Kidd Voodoo",
+    duration: 180,
+    coverURL: "/images/albumCovers/baila-morena.png",
+    audioURL: "/songs/baila-morena.mp3",
+  },
+  {
+    user_id: "1",
+    id: "5",
+    name: "Tú me mientes",
+    artist: "Drefquila, Kidd Voodoo",
+    duration: 180,
+    coverURL: "/images/albumCovers/tu-me-mientes.jpg",
+    audioURL: "/songs/tu-me-mientes.mp3",
+  },
+  {
+    user_id: "1",
+    id: "6",
+    name: "Y podría",
+    artist: "Resonancia Etérea",
+    duration: 180,
+    coverURL: "/images/albumCovers/y-podria.jpg",
+    audioURL: "/songs/y-podria.mp3",
+  },
 ];
 
 playerStore.playSong(songs[0]);
 
 setTimeout(() => {
   isFetching.value = false;
-}, 2000);
+}, 1500);
 </script>
