@@ -16,7 +16,7 @@ git clone https://github.com/mizook/AudioFlow
 
 2. Navigate to the project folder:
 ```
-cd CLIENT-AudioFlow
+cd AudioFlow
 ```
 
 3. Install the project dependencies:
