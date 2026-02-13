@@ -18,8 +18,8 @@
             <img :src="song.coverURL" class="w-full h-full object-cover" />
           </div>
           <div>
-            <h1 class="text-3xl md:text-5xl font-black text-white tracking-tighter mb-2">{{ song.name }}</h1>
-            <p class="text-lg md:text-xl text-white/60 font-medium">{{ song.artist }}</p>
+            <h1 class="text-xl md:text-5xl font-black text-white tracking-tighter mb-2">{{ song.name }}</h1>
+            <p class="text-sm md:text-xl text-white/60 font-medium">{{ song.artist }}</p>
           </div>
         </div>
         <button 
@@ -91,6 +91,7 @@ import { ref, onMounted, watch, computed } from "vue";
 import Close from "vue-material-design-icons/Close.vue";
 import AlertCircle from "vue-material-design-icons/AlertCircle.vue";
 import { usePlayerStore } from "@/stores/player";
+import axios from "axios";
 
 const props = defineProps({
   song: {

@@ -24,7 +24,7 @@
 
     <!-- Toggle Button -->
     <div 
-      class="flex w-full h-[60px] items-center mb-1"
+      class="hidden md:flex w-full h-[60px] items-center mb-1"
       :class="mainStore.isSidebarCollapsed ? 'justify-center' : 'justify-end pr-5'"
     >
         <button 

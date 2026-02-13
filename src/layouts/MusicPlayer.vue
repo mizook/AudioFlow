@@ -3,11 +3,11 @@
     id="MusicPlayer"
     class="glass-dark w-full h-full flex items-center justify-between px-4 md:px-10 shadow-2xl transition-all duration-500"
   >
-    <div class="flex items-center w-2/3 md:w-1/4 overflow-hidden">
+    <div class="flex items-center w-[45%] md:w-1/4 overflow-hidden">
       <div v-if="player.currentSong" class="flex items-center w-full">
         <img
           class="rounded-lg shadow-lg flex-shrink-0"
-          :width="windowWidth < 768 ? 45 : 60"
+          :width="windowWidth < 768 ? 40 : 60"
           :src="player.currentSong.coverURL"
         />
         <div
@@ -24,27 +24,42 @@
         </div>
       </div>
       <div v-else class="flex items-center space-x-3 opacity-50">
-        <div class="bg-white/10 rounded-lg w-[45px] h-[45px] md:w-[60px] md:h-[60px] flex items-center justify-center">
+        <div class="bg-white/10 rounded-lg w-[40px] h-[40px] md:w-[60px] md:h-[60px] flex items-center justify-center">
           <MusicIcon :size="24" fillColor="#FFFFFF" />
         </div>
-        <div class="text-sm text-gray-400 italic">No hay canción seleccionada</div>
+        <div class="text-xs md:text-sm text-gray-400 italic ml-2">Sin canción</div>
       </div>
     </div>
 
     <div 
-      class="flex-1 flex flex-col items-center justify-center max-w-[50%] md:max-w-[40%] px-2"
+      class="flex-1 flex flex-col items-center justify-center md:max-w-[40%] px-1"
       :class="{ 'opacity-30 pointer-events-none': !player.currentSong }"
     >
-        <div class="buttons flex items-center justify-center h-[35px] mb-2">
-          <button class="mx-2 opacity-70 hover:opacity-100 transition-opacity" @click="prevSong">
-            <SkipBackward fillColor="#FFFFFF" :size="windowWidth < 768 ? 20 : 24" />
+        <div class="buttons flex items-center justify-center gap-4 md:gap-6 w-full h-[30px] md:h-[35px] mb-1 md:mb-2">
+          <button class="opacity-70 hover:opacity-100 transition-opacity" @click="prevSong">
+            <SkipBackward fillColor="#FFFFFF" :size="windowWidth < 768 ? 22 : 24" />
           </button>
-          <button class="h-8 w-8 md:h-10 md:w-10 rounded-full mx-4 bg-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg" @click="togglePlay">
-            <Play v-if="!player.isPlaying" fillColor="#181818" :size="windowWidth < 768 ? 20 : 26" class="ml-0.5" />
-            <Pause v-else fillColor="#181818" :size="windowWidth < 768 ? 20 : 26" />
+          
+          <button class="h-8 w-8 md:h-10 md:w-10 rounded-full bg-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg" @click="togglePlay">
+            <Play v-if="!player.isPlaying" fillColor="#181818" :size="windowWidth < 768 ? 22 : 26" class="ml-0.5" />
+            <Pause v-else fillColor="#181818" :size="windowWidth < 768 ? 22 : 26" />
           </button>
-          <button class="mx-2 opacity-70 hover:opacity-100 transition-opacity" @click="nextSong">
-            <SkipForward fillColor="#FFFFFF" :size="windowWidth < 768 ? 20 : 24" />
+
+          <!-- Mobile Lyrics Button -->
+          <button 
+            v-if="windowWidth < 768 && player.currentSong"
+            class="transition-all"
+            @click="playerStore.toggleLyrics()"
+          >
+            <MicrophoneVariant 
+              :size="22" 
+              class="transition-colors"
+              :class="player.showLyrics ? 'text-green-500' : 'text-white/70'"
+            />
+          </button>
+
+          <button class="opacity-70 hover:opacity-100 transition-opacity" @click="nextSong">
+            <SkipForward fillColor="#FFFFFF" :size="windowWidth < 768 ? 22 : 24" />
           </button>
         </div>
 
