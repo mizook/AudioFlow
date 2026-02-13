@@ -157,6 +157,7 @@ const fetchLyrics = async () => {
     
     // Fallback Proxies
     const PROXIES = [
+        "https://api.codetabs.com/v1/proxy?quest=",
         "https://api.allorigins.win/get?url=",
         "https://corsproxy.io/?",
         "https://thingproxy.freeboard.io/fetch/"

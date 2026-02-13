@@ -249,16 +249,16 @@ const prevSong = () => {
   if (playerStore.lastPlayed.length === 0) {
     audio.value.currentTime = 0;
     if (mainStore.user) {
-      togglePlayFS(playerStore.player.id, player.isPlaying);
-      updateCurrentTime(playerStore.player.id, 0);
+      // togglePlayFS(playerStore.player.id, player.isPlaying);
+      // updateCurrentTime(playerStore.player.id, 0);
     }
     return;
   }
 
   if (mainStore.user && playerStore.lastPlayed.length > 0) {
     let nextSong = playerStore.lastPlayed[0];
-    updateCurrentTime(playerStore.player.id, 0);
-    setSong(playerStore.player.id, nextSong);
+    // updateCurrentTime(playerStore.player.id, 0);
+    // setSong(playerStore.player.id, nextSong);
   }
   playerStore.prevSong();
 };
@@ -267,8 +267,8 @@ const handleSongEnd = () => {
   if (player.queue.length === 0) {
     player.isPlaying = false;
     if (mainStore.user) {
-      togglePlayFS(playerStore.player.id, player.isPlaying);
-      updateCurrentTime(playerStore.player.id, player.currentTime);
+      // togglePlayFS(playerStore.player.id, player.isPlaying);
+      // updateCurrentTime(playerStore.player.id, player.currentTime);
     }
   } else {
     nextSong();
