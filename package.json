@@ -10,6 +10,8 @@
   "dependencies": {
     "@headlessui/vue": "^1.7.16",
     "@vue/compiler-sfc": "^3.3.4",
+    "axios": "^1.13.5",
+    "cheerio": "^1.2.0",
     "pinia": "^2.1.7",
     "pinia-plugin-persistedstate": "^3.2.1",
     "uniqolor": "^1.1.0",

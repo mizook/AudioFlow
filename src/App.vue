@@ -32,8 +32,8 @@
 
 <script setup>
 import { storeToRefs } from "pinia";
-import { onMounted } from "vue";
-import { RouterView } from "vue-router";
+import { onMounted, watch } from "vue";
+import { RouterView, useRoute } from "vue-router";
 import TopNav from "@/layouts/TopNav.vue";
 import Sidebar from "@/layouts/Sidebar.vue";
 import MusicPlayer from "@/layouts/MusicPlayer.vue";
@@ -46,6 +46,17 @@ const { player } = storeToRefs(playerStore);
 onMounted(() => {
   player.value.isPlaying = false;
 });
+
+const route = useRoute();
+
+watch(
+  () => route.path,
+  () => {
+    if (player.value.showLyrics) {
+      player.value.showLyrics = false;
+    }
+  }
+);
 </script>
 
 <style>

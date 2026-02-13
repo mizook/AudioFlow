@@ -113,35 +113,6 @@ const lyricsLines = computed(() => {
   return lyrics.value.split('\n');
 });
 
-const ACCESS_TOKEN = import.meta.env.VITE_GENIUS_ACCESS_TOKEN; 
-const SEARCH_URL = "https://api.genius.com/search";
-
-const PROXIES = [
-  "https://api.allorigins.win/get?url=",
-  "https://corsproxy.io/?",
-  "https://thingproxy.freeboard.io/fetch/"
-];
-
-const fetchWithProxy = async (url) => {
-  let lastError = null;
-  for (const proxy of PROXIES) {
-    try {
-      const fullUrl = proxy.includes("allorigins") ? `${proxy}${encodeURIComponent(url)}` : `${proxy}${url}`;
-      const response = await fetch(fullUrl);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      if (proxy.includes("allorigins")) {
-        const data = await response.json();
-        return typeof data.contents === 'string' ? data.contents : JSON.stringify(data.contents);
-      }
-      return await response.text();
-    } catch (err) {
-      console.warn(`Proxy ${proxy} failed:`, err);
-      lastError = err;
-    }
-  }
-  throw lastError || new Error("No se pudo conectar con los servidores de letras.");
-};
-
 const fetchLyrics = async () => {
   // Check persistent store cache first
   if (playerStore.lyricsCache && playerStore.lyricsCache[props.song.id]) {
@@ -151,30 +122,79 @@ const fetchLyrics = async () => {
     return;
   }
 
-  if (!ACCESS_TOKEN || ACCESS_TOKEN === "YOUR_GENIUS_ACCESS_TOKEN_HERE") {
-    error.value = "Configuración de API requerida.";
-    loading.value = false;
-    return;
-  }
-
+  const query = `${props.song.name} ${props.song.artist}`;
+  
   loading.value = true;
   error.value = "";
   lyrics.value = "";
 
   try {
-    const query = `${props.song.name} ${props.song.artist}`;
+    // 1. Try Vercel Serverless Function (internal API) first
+    // This will work in Production (Vercel) but fail locally with Vite (404)
+    try {
+        const response = await axios.get(`/api/lyrics`, {
+            params: { q: query },
+            timeout: 5000 // Short timeout to fail fast locally
+        });
+        
+        const finalLyrics = response.data.lyrics;
+        if (finalLyrics) {
+            playerStore.cacheLyrics(props.song.id, finalLyrics);
+            lyrics.value = finalLyrics;
+            error.value = "";
+            loading.value = false;
+            return; // Success via API!
+        }
+    } catch (apiErr) {
+        console.warn("Internal API failed (expected locally), trying fallbacks...", apiErr.message);
+        // Continue to fallback logic below
+    }
+
+    // 2. Fallback: Client-side Scraping with Proxies (for Localhost / Backup)
+    const ACCESS_TOKEN = import.meta.env.VITE_GENIUS_ACCESS_TOKEN; 
+    const SEARCH_URL = "https://api.genius.com/search";
+    
+    // Fallback Proxies
+    const PROXIES = [
+        "https://api.allorigins.win/get?url=",
+        "https://corsproxy.io/?",
+        "https://thingproxy.freeboard.io/fetch/"
+    ];
+    
+    // Helper for proxies
+    const fetchWithProxy = async (url) => {
+        let lastError = null;
+        for (const proxy of PROXIES) {
+            try {
+                const fullUrl = proxy.includes("allorigins") ? `${proxy}${encodeURIComponent(url)}` : `${proxy}${url}`;
+                const response = await fetch(fullUrl);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                if (proxy.includes("allorigins")) {
+                    const data = await response.json();
+                    return typeof data.contents === 'string' ? data.contents : JSON.stringify(data.contents);
+                }
+                return await response.text();
+            } catch (err) {
+                console.warn(`Proxy ${proxy} failed:`, err);
+                lastError = err;
+            }
+        }
+        throw lastError || new Error("No se pudo conectar con los servidores de letras.");
+    };
+
+    if (!ACCESS_TOKEN) throw new Error("API Token missing for fallback.");
+
     const searchUrl = `${SEARCH_URL}?q=${encodeURIComponent(query)}&access_token=${ACCESS_TOKEN}`;
     const searchContents = await fetchWithProxy(searchUrl);
     
     let searchData;
-    try { searchData = JSON.parse(searchContents); } catch (e) { throw new Error("Error de respuesta API."); }
+    try { searchData = JSON.parse(searchContents); } catch (e) { throw new Error("Error de respuesta API (Fallback)."); }
 
-    if (searchData.meta.status !== 200) throw new Error(`Error Genius: ${searchData.meta.status}`);
+    if (!searchData.response || !searchData.response.hits || searchData.response.hits.length === 0) {
+        throw new Error("Letra no encontrada.");
+    }
 
-    const hits = searchData.response.hits;
-    if (hits.length === 0) throw new Error("Letra no encontrada.");
-
-    const songUrl = hits[0].result.url;
+    const songUrl = searchData.response.hits[0].result.url;
     const html = await fetchWithProxy(songUrl);
 
     const parser = new DOMParser();
@@ -193,7 +213,7 @@ const fetchLyrics = async () => {
       if (oldLyrics) lyricsText = oldLyrics.textContent;
     }
 
-    if (!lyricsText.trim()) throw new Error("No se pudo extraer el texto.");
+    if (!lyricsText.trim()) throw new Error("No se pudo extraer el texto (Fallback).");
     
     const finalLyrics = lyricsText.trim().replace(/\n{3,}/g, '\n\n');
     lyrics.value = finalLyrics;
@@ -202,7 +222,8 @@ const fetchLyrics = async () => {
     playerStore.cacheLyrics(props.song.id, finalLyrics);
 
   } catch (err) {
-    error.value = err.message || "Error al cargar letras";
+    console.error("All fetch methods failed:", err);
+    error.value = "No pudimos encontrar la letra de esta canción.";
   } finally {
     loading.value = false;
   }
