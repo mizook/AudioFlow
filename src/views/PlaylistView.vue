@@ -160,13 +160,12 @@ const route = useRoute();
 const mainStore = useMainStore();
 const playerStore = usePlayerStore();
 
-const errors = ref < string > "";
+const errors = ref("");
 
 let playlistId = route.params.id;
 
 const playlist =
-  ref <
-  Playlist >
+  ref(
   {
     id: "playlist_id",
     user_id: "user_id",
@@ -174,7 +173,7 @@ const playlist =
     name: "playlist_name",
     image: "/images/icons/defaultPlaylistImg.png",
     songs: [],
-  };
+  });
 
 const showConfirmationModal = ref(false);
 const isLoading = ref(false);

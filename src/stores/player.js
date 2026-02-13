@@ -12,12 +12,20 @@ export const usePlayerStore = defineStore({
       currentTime: 0,
       volume: 100,
       isPlaying: false,
+      showLyrics: false,
     },
     lastPlayed: [],
     subscribed: false,
+    lyricsCache: {},
   }),
 
   actions: {
+    toggleLyrics() {
+      this.player.showLyrics = !this.player.showLyrics;
+    },
+    cacheLyrics(songId, lyrics) {
+      this.lyricsCache[songId] = lyrics;
+    },
     storePlayer(player) {
       const { id, currentTime, volume, user_id, currentSong, queue } = player;
       this.player.id = id;
@@ -37,6 +45,7 @@ export const usePlayerStore = defineStore({
         currentTime: 0,
         volume: 100,
         isPlaying: false,
+        showLyrics: false,
       };
       this.lastPlayed = [];
     },
@@ -75,6 +84,15 @@ export const usePlayerStore = defineStore({
         this.player.currentTime = 0;
         this.player.isPlaying = true;
         this.playSong(this.player.queue.shift());
+      } else {
+        // If queue is empty, loop through systemSongs in MainStore
+        const mainStore = useMainStore();
+        const currentIndex = mainStore.systemSongs.findIndex(s => s.id === this.player.currentSong?.id);
+        if (currentIndex !== -1 && currentIndex < mainStore.systemSongs.length - 1) {
+          this.playSong(mainStore.systemSongs[currentIndex + 1]);
+        } else if (mainStore.systemSongs.length > 0) {
+          this.playSong(mainStore.systemSongs[0]); // Loop to first
+        }
       }
     },
 
@@ -88,6 +106,13 @@ export const usePlayerStore = defineStore({
         this.player.currentTime = 0;
         this.player.isPlaying = true;
         this.player.currentSong = previousSong;
+      } else {
+        // If nothing in lastPlayed, try to go to previous in systemSongs
+        const mainStore = useMainStore();
+        const currentIndex = mainStore.systemSongs.findIndex(s => s.id === this.player.currentSong?.id);
+        if (currentIndex > 0) {
+          this.playSong(mainStore.systemSongs[currentIndex - 1]);
+        }
       }
     },
 

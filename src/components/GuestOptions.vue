@@ -5,48 +5,51 @@
   <Menu as="div" class="relative inline-block text-left mr-6">
     <div>
       <MenuButton
-        class="flex items-center h-10 gap-1 rounded-full bg-[#282828] bg-opacity-40 text-sm font-medium text-white hover:bg-gray-900 cursor-pointer"
+        class="flex items-center h-10 px-3 gap-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-white hover:bg-white/10 transition-all cursor-pointer backdrop-blur-md"
       >
-        <Avatar :size="25" color="white" username="username" class="m-1" />
-        Usuario Invitado
-        <ChevronDown class="pl-1" />
+        <Avatar :size="24" color="white" username="Invitado" class="opacity-80" />
+        <span class="hidden sm:inline">Usuario Invitado</span>
+        <ChevronDown :size="18" class="opacity-50" />
       </MenuButton>
     </div>
 
     <transition
-      enter-active-class="transition duration-100 ease-out"
+      enter-active-class="transition duration-200 ease-out"
       enter-from-class="transform scale-95 opacity-0"
       enter-to-class="transform scale-100 opacity-100"
-      leave-active-class="transition duration-75 ease-in"
+      leave-active-class="transition duration-150 ease-in"
       leave-from-class="transform scale-100 opacity-100"
       leave-to-class="transform scale-95 opacity-0"
     >
       <MenuItems
-        class="absolute right-0 mt-2 w-38 origin-top-right divide-y divide-gray-100 rounded-md bg-black shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none"
+        class="absolute right-0 mt-3 w-48 origin-top-right rounded-2xl bg-neutral-900/90 backdrop-blur-xl border border-white/10 shadow-2xl focus:outline-none overflow-hidden"
       >
-        <div class="px-1 py-1">
+        <div class="p-1.5">
           <MenuItem v-slot="{ active }">
             <button
               @click="openLoginModal"
               :class="[
-                active ? 'bg-gray-900 text-white' : 'text-gray-300',
-                'group flex w-full items-center px-2 py-2 text-sm border-b border-gray-700',
+                active ? 'bg-white/10 text-white' : 'text-gray-300',
+                'group flex w-full items-center justify-between px-4 py-2.5 text-sm rounded-xl transition-colors',
               ]"
             >
-              Iniciar sesión
-              <Account class="ml-3 pl-2" />
+              <span>Iniciar sesión</span>
+              <Account :size="18" class="opacity-50 group-hover:opacity-100 transition-opacity" />
             </button>
           </MenuItem>
+          
+          <div class="h-[1px] bg-white/5 my-1 mx-2"></div>
+
           <MenuItem v-slot="{ active }">
             <button
               @click="openRegisterModal"
               :class="[
-                active ? 'bg-gray-900 text-white' : 'text-gray-300',
-                'group flex w-full items-center px-2 py-2 text-sm',
+                active ? 'bg-white/10 text-white' : 'text-gray-300',
+                'group flex w-full items-center justify-between px-4 py-2.5 text-sm rounded-xl transition-colors',
               ]"
             >
-              Registrarse
-              <AccountPlus class="ml-3 pl-4" />
+              <span>Registrarse</span>
+              <AccountPlus :size="18" class="opacity-50 group-hover:opacity-100 transition-opacity" />
             </button>
           </MenuItem>
         </div>

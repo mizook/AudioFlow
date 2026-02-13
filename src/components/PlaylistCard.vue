@@ -25,7 +25,7 @@ import { ref, toRefs } from "vue";
 import { RouterLink } from "vue-router";
 import uniqolor from "uniqolor";
 
-let randColor = ref < UniqolorResult > { color: "" };
+let randColor = ref({ color: "" });
 randColor.value = uniqolor.random();
 
 const props = defineProps({ playlist: { required: true } });

@@ -1,7 +1,7 @@
 <template>
   <div
     id="TopNav"
-    class="w-[100%] h-[60px] sticky top-0 z-50 bg-gradient-to-b from-[#505a88] to-[#2d373f] shadow-2xl flex items-center justify-between"
+    class="w-[100%] h-[60px] sticky top-0 z-50 glass shadow-2xl flex items-center justify-between"
   >
     <div class="flex items-center ml-6">
       <button

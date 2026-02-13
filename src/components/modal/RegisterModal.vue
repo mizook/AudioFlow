@@ -25,114 +25,103 @@
             leave-to="opacity-0 scale-95"
           >
             <DialogPanel
-              class="flex w-full max-w-2xl transform overflow-hidden rounded-2xl bg-black p-6 shadow-xl transition-all"
+              class="flex w-full max-w-2xl transform overflow-hidden rounded-3xl bg-neutral-950/80 backdrop-blur-xl border border-white/10 p-8 shadow-2xl transition-all"
             >
-              <!-- Bloque Izquierdo -->
-              <div class="w-1/2 pr-4 gap-5">
+              <div class="w-full md:w-1/2 md:pr-8">
                 <DialogTitle
                   as="h3"
-                  class="text-lg font-medium leading-6 text-white mb-4"
-                  >¡Regístrate en AudioFlow!</DialogTitle
+                  class="text-2xl font-bold leading-6 text-white mb-2"
+                  >Crea tu cuenta</DialogTitle
                 >
-                <form @submit.prevent="submitForm" class="mt-6">
-                  <div class="mt-4">
-                    <label for="username" class="block text-sm text-gray-400"
-                      >Nombre de usuario</label
+                <p class="text-gray-400 text-sm mb-6">Únete a la comunidad de AudioFlow hoy mismo.</p>
+                
+                <form @submit.prevent="submitForm" class="space-y-3">
+                  <div>
+                    <label for="username" class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1"
+                      >Usuario</label
                     >
                     <input
                       type="text"
                       id="username"
                       name="username"
-                      autocomplete="off"
-                      placeholder="@username"
+                      autocomplete="username"
+                      placeholder="@usuario"
+                      :disabled="isLoading"
                       v-model="formData.username"
-                      :class="{ 'border-red-500': errors.username }"
-                      class="w-[90%] h-10 my-2 py-3 px-4 block border-6 bg-gray-950 text-white border-gray-200 rounded-md text-sm focus:border-green-500 focus:ring-green-500 shadow-sm"
+                      class="w-full h-11 bg-white/5 text-white border border-white/10 rounded-xl px-4 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-all disabled:opacity-50"
                     />
-                    <p v-if="errors.username" class="text-xs text-red-600 mt-2">
-                      {{ errors.username[0] }}
-                    </p>
                   </div>
 
-                  <div class="mt-4">
-                    <label for="email" class="block text-sm text-gray-400"
-                      >Correo electrónico</label
+                  <div>
+                    <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1"
+                      >Correo Electrónico</label
                     >
                     <input
-                      type="text"
+                      type="email"
                       id="email"
                       name="email"
-                      autocomplete="off"
-                      placeholder="ejemplo@correo"
+                      autocomplete="email"
+                      placeholder="tu@correo.com"
+                      :disabled="isLoading"
                       v-model="formData.email"
-                      :class="{ 'border-red-500': errors.email }"
-                      class="w-[90%] h-10 my-2 py-3 px-4 block border-6 bg-gray-950 text-white border-gray-200 rounded-md text-sm focus:border-green-500 focus:ring-green-500 shadow-sm"
+                      class="w-full h-11 bg-white/5 text-white border border-white/10 rounded-xl px-4 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-all disabled:opacity-50"
                     />
-                    <p v-if="errors.email" class="text-xs text-red-600 mt-2">
-                      {{ errors.email[0] }}
-                    </p>
                   </div>
 
-                  <div class="mt-4">
-                    <label for="password" class="block text-sm text-gray-400"
+                  <div>
+                    <label for="password" class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1"
                       >Contraseña</label
                     >
                     <input
                       type="password"
                       id="password"
                       name="password"
-                      autocomplete="off"
-                      placeholder="contraseña"
+                      autocomplete="new-password"
+                      placeholder="••••••••"
+                      :disabled="isLoading"
                       v-model="formData.password"
-                      :class="{ 'border-red-500': errors.password }"
-                      class="w-[90%] h-10 my-2 py-3 px-4 block border-6 bg-gray-950 text-white border-gray-200 rounded-md text-sm focus:border-green-500 focus:ring-green-500 shadow-sm"
+                      class="w-full h-11 bg-white/5 text-white border border-white/10 rounded-xl px-4 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-all disabled:opacity-50"
                     />
-                    <p v-if="errors.password" class="text-xs text-red-600 mt-2">
-                      {{ errors.password[0] }}
-                    </p>
                   </div>
 
-                  <div class="mt-4">
-                    <label
-                      for="confirmPassword"
-                      class="block text-sm text-gray-400"
-                      >Confirmar contraseña</label
+                  <div>
+                    <label for="confirmPassword" class="block text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1"
+                      >Confirmar Contraseña</label
                     >
                     <input
                       type="password"
                       id="confirmPassword"
                       name="confirmPassword"
-                      autocomplete="off"
-                      placeholder="contraseña"
+                      autocomplete="new-password"
+                      placeholder="••••••••"
+                      :disabled="isLoading"
                       v-model="formData.confirmPassword"
-                      :class="{ 'border-red-500': errors.confirmPassword }"
-                      class="w-[90%] h-10 my-2 py-3 px-4 block border-6 bg-gray-950 text-white border-gray-200 rounded-md text-sm focus:border-green-500 focus:ring-green-500 shadow-sm"
+                      class="w-full h-11 bg-white/5 text-white border border-white/10 rounded-xl px-4 text-sm focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition-all disabled:opacity-50"
                     />
-                    <p
-                      v-if="errors.confirmPassword"
-                      class="text-xs text-red-600 mt-2"
-                    >
-                      {{ errors.confirmPassword }}
-                    </p>
                   </div>
 
-                  <div class="mt-8 flex justify-center pr-8">
+                  <div class="pt-4">
                     <button
                       type="submit"
-                      class="inline-flex justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white hover:text-black hover:bg-green-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                      :disabled="isLoading"
+                      class="w-full h-11 flex justify-center items-center rounded-xl bg-green-500 text-black font-bold text-sm hover:bg-green-400 focus:outline-none transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
                     >
-                      Enviar
+                      <template v-if="isLoading">
+                        <div class="h-5 w-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                      </template>
+                      <template v-else>
+                        Registrarme
+                      </template>
                     </button>
                   </div>
                 </form>
               </div>
 
-              <!-- Bloque Derecho -->
-              <div class="w-1/2 flex items-center justify-center">
+              <div class="hidden md:flex w-1/2 items-center justify-center bg-white/5 rounded-2xl ml-4">
                 <img
                   src="/images/icons/audioflow-logo.png"
                   alt="Icono de AudioFlow"
-                  class="w-1/2"
+                  class="w-1/2 drop-shadow-2xl animate-pulse"
                 />
               </div>
             </DialogPanel>
@@ -153,9 +142,10 @@ import {
   DialogTitle,
 } from "@headlessui/vue";
 
-import { showErrorToast } from "@/utils/toast";
+import { showErrorToast, showSuccessToast } from "@/utils/toast";
 
 const isOpen = ref(true);
+const isLoading = ref(false);
 const emits = defineEmits(["close"]);
 const errors = ref({});
 
@@ -174,8 +164,20 @@ function closeModal() {
 }
 
 async function submitForm() {
-  showErrorToast("No implementado en esta versión de la app :(", 2000);
+  if (formData.value.password !== formData.value.confirmPassword) {
+    showErrorToast("Las contraseñas no coinciden");
+    return;
+  }
 
-  closeModal();
+  isLoading.value = true;
+  
+  // Simular registro
+  await new Promise(resolve => setTimeout(resolve, 2000));
+  
+  isLoading.value = false;
+  showErrorToast("El registro no está habilitado en la demo, usa @guest", 3000);
+  
+  // Opcionalmente cerrar anyway para limpiar
+  setTimeout(() => closeModal(), 1000);
 }
 </script>

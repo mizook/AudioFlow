@@ -1,52 +1,51 @@
 <template>
   <li
-    class="flex items-center justify-between rounded-md hover:bg-[#2A2929]"
+    class="group flex items-center justify-between px-4 py-2 rounded-xl hover:bg-white/[0.05] transition-all duration-300 border border-transparent hover:border-white/5"
     @mouseenter="isHover = true"
     @mouseleave="isHover = false"
   >
-    <div class="flex items-center w-full py-1.5" @click="playSong">
+    <div class="flex items-center flex-1 min-w-0 cursor-pointer" @click="playSong">
       <ConfirmationModal
         v-if="showConfirmationModal"
         @close="showConfirmationModal = false"
         @confirm="deleteSongAndCloseModal()"
         entityToDelete="canción de la playlist"
       />
-      <div v-if="isHover" class="w-[40px] ml-[14px] mr-[6px] cursor-pointer">
-        <Play fillColor="#FFFFFF" :size="25" @click="playSong" />
-        <!-- <Play
-                    v-else-if="isPlaying && currentSong.name !== song.song"
-                    fillColor="#FFFFFF"
-                    :size="25"
-                    @click="useSong.loadSong(artist, song)"
-                />  -->
-
-        <!-- <Pause v-else fillColor="#FFFFFF" :size="25" @click="pauseSong"/>  -->
-      </div>
-      <div v-else class="text-gray-400 font-semibold w-[40px] ml-5">
-        <span>
-          {{ props.index + 1 }}
-        </span>
-      </div>
-      <div>
-        <div
-          :class="{ 'text-green-500': props.song }"
-          class="text-white font-semibold"
-        >
-          {{ props.song.name }}
+      
+      <!-- Index / Play Button -->
+      <div class="w-10 flex items-center justify-center mr-2">
+        <div v-if="isHover" class="text-white">
+          <Play :size="20" />
         </div>
-        <div class="text-sm font-semibold text-gray-400">
-          {{ props.song.artist }}
+        <div v-else class="text-gray-500 font-medium text-sm">
+          {{ props.index + 1 }}
+        </div>
+      </div>
+
+      <!-- Song Info -->
+      <div class="flex items-center min-w-0">
+        <!-- Optional: Small thumbnail if needed, but keeping it clean for now -->
+        <div class="truncate">
+          <div
+            :class="playerStore.player.currentSong?.id === props.song.id ? 'text-green-500' : 'text-white'"
+            class="font-semibold text-[15px] truncate tracking-tight"
+          >
+            {{ props.song.name }}
+          </div>
+          <div class="text-[13px] text-gray-400 font-medium truncate opacity-70">
+            {{ props.song.artist }}
+          </div>
         </div>
       </div>
     </div>
-    <div class="flex">
-      <button type="button">
-        <div class="text-xs mx-5 text-gray-400">
-          {{ formatDuration(props.song.duration) }}
-        </div>
-      </button>
 
-      <div class="mr-5">
+    <!-- Duration and Options -->
+    <div class="flex items-center space-x-6 ml-4">
+      <div class="text-[13px] text-gray-400 font-medium whitespace-nowrap opacity-60">
+        {{ formatDuration(props.song.duration) }}
+      </div>
+
+      <div class="opacity-0 group-hover:opacity-100 transition-opacity">
         <SongRowOptions :song="props.song" :playlist="props.playlist" />
       </div>
     </div>
@@ -54,7 +53,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps } from "vue";
+import { ref } from "vue";
 import Play from "vue-material-design-icons/Play.vue";
 import Pause from "vue-material-design-icons/Pause.vue";
 import { usePlayerStore } from "../stores/player";
@@ -108,7 +107,7 @@ const deleteSongAndCloseModal = async () => {
     mainStore.loadMyPlaylists(userPlaylists);
     router.go(0);
     setTimeout(() => {
-      showSuccessToast("Canción removida correctamente correctamente");
+      showSuccessToast("Canción removida correctamente");
     }, 500);
   } catch (error) {
     if (error.response) {

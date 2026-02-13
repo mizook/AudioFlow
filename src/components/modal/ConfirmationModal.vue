@@ -25,23 +25,30 @@
             leave-to="opacity-0 scale-95"
           >
             <DialogPanel
-              class="flex transform overflow-hidden rounded-2xl bg-black p-6 shadow-xl transition-all"
+              class="flex flex-col transform overflow-hidden rounded-2xl glass-dark border border-white/10 p-8 shadow-2xl transition-all max-w-md w-full"
             >
-              <div class="bg-black p-4 rounded-lg shadow-md">
-                <h2 class="text-lg font-semibold text-white">
-                  ¿Estás seguro de que deseas eliminar esta
-                  {{ props.entityToDelete }}?
+              <div class="flex flex-col items-center text-center">
+                <div class="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-6">
+                   <AlertCircle :size="40" class="text-red-500" />
+                </div>
+                
+                <h2 class="text-xl font-bold text-white mb-2">
+                  ¿Eliminar {{ props.entityToDelete }}?
                 </h2>
-                <div class="mt-4 flex justify-end">
+                <p class="text-white/60 text-sm mb-8 leading-relaxed">
+                  Esta acción no se puede deshacer. ¿Estás seguro de que quieres continuar?
+                </p>
+
+                <div class="flex w-full space-x-4">
                   <button
                     @click="closeModal"
-                    class="px-3 py-1 mr-2 bg-[#282828] text-white rounded hover:bg-gray-900"
+                    class="flex-1 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-medium transition-all border border-white/5"
                   >
                     Cancelar
                   </button>
                   <button
                     @click="confirmModal"
-                    class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-400"
+                    class="flex-1 px-4 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold transition-all shadow-lg shadow-red-500/20"
                   >
                     Eliminar
                   </button>
@@ -63,6 +70,7 @@ import {
   Dialog,
   DialogPanel,
 } from "@headlessui/vue";
+import AlertCircle from "vue-material-design-icons/AlertCircle.vue";
 
 const props = defineProps({
   entityToDelete: {

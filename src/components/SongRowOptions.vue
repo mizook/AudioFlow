@@ -11,103 +11,76 @@
     :song="song"
   ></AddSongPlaylistModal>
 
-  <Menu as="div" class="relative pl-1" id="songOptions">
+  <Menu as="div" class="relative" id="songOptions">
     <div>
       <MenuButton
-        class="items-center rounded-full bg-[#282828] bg-opacity-40 text-sm font-medium text-white hover:bg-gray-900 cursor-pointer"
+        class="flex items-center justify-center h-8 w-8 rounded-full bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all cursor-pointer backdrop-blur-md group/dots"
       >
-        <DotsHorizontal />
+        <DotsHorizontal :size="20" class="text-white opacity-60 group-hover/dots:opacity-100 transition-opacity" />
       </MenuButton>
     </div>
 
     <transition
-      enter-active-class="transition duration-100 ease-out"
+      enter-active-class="transition duration-200 ease-out"
       enter-from-class="transform scale-95 opacity-0"
       enter-to-class="transform scale-100 opacity-100"
-      leave-active-class="transition duration-75 ease-in"
+      leave-active-class="transition duration-150 ease-in"
       leave-from-class="transform scale-100 opacity-100"
       leave-to-class="transform scale-95 opacity-0"
     >
       <MenuItems
-        class="absolute right-1 w-48 rounded-md bg-black shadow-2xl z-50"
+        class="absolute right-0 mt-2 w-52 origin-top-right rounded-2xl bg-neutral-900/95 backdrop-blur-xl border border-white/10 shadow-2xl focus:outline-none overflow-hidden z-[100]"
       >
-        <div class="px-1 py-1">
-          <MenuItem v-slot="{ active }" class="w-full">
+        <div class="p-1.5">
+          <MenuItem v-slot="{ active }">
             <button
               @click="addToQueue()"
               :class="[
-                active ? 'bg-gray-900 text-white' : 'text-gray-300',
-                'group flex w-full items-center px-2 py-2 text-sm border-b border-gray-700',
+                active ? 'bg-white/10 text-white' : 'text-gray-300',
+                'group flex w-full items-center justify-between px-4 py-2.5 text-sm rounded-xl transition-colors',
               ]"
             >
-              Agregar a cola
-              <svg
-                class="w-5 h-5 text-white ml-[52px]"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 21 18"
-              >
-                <path
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M9.5 3h9.563M9.5 9h9.563M9.5 15h9.563M1.5 13a2 2 0 1 1 3.321 1.5L1.5 17h5m-5-15 2-1v6m-2 0h4"
-                />
+              <span>Agregar a cola</span>
+              <svg class="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
             </button>
           </MenuItem>
+
+          <div v-if="mainStore.user" class="h-[1px] bg-white/5 my-1 mx-2"></div>
+
           <MenuItem v-if="mainStore.user" v-slot="{ active }">
             <button
               @click="addToPlaylist()"
               :class="[
-                active ? 'bg-gray-900 text-white' : 'text-gray-300',
-                'group flex w-full items-center px-2 py-2 text-sm',
+                active ? 'bg-white/10 text-white' : 'text-gray-300',
+                'group flex w-full items-center justify-between px-4 py-2.5 text-sm rounded-xl transition-colors',
               ]"
             >
-              Agregar a playlist
-              <svg
-                class="w-5 h-5 text-white ml-[38px] mt-1"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 18 16"
-              >
-                <path
-                  d="M14.316.051A1 1 0 0 0 13 1v8.473A4.49 4.49 0 0 0 11 9c-2.206 0-4 1.525-4 3.4s1.794 3.4 4 3.4 4-1.526 4-3.4a2.945 2.945 0 0 0-.067-.566c.041-.107.064-.22.067-.334V2.763A2.974 2.974 0 0 1 16 5a1 1 0 0 0 2 0C18 1.322 14.467.1 14.316.051ZM10 3H1a1 1 0 0 1 0-2h9a1 1 0 1 1 0 2Z"
-                />
-                <path
-                  d="M10 7H1a1 1 0 0 1 0-2h9a1 1 0 1 1 0 2Zm-5 4H1a1 1 0 0 1 0-2h4a1 1 0 1 1 0 2Z"
-                />
+              <span>Agregar a playlist</span>
+              <svg class="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 3H1a1 1 0 100 2h9a1 1 0 100-2zM10 7H1a1 1 0 100 2h9a1 1 0 100-2zM5 11H1a1 1 0 100 2h4a1 1 0 100-2zM14.5 3a1 1 0 011 1v2.5H18a1 1 0 110 2h-2.5V11a1 1 0 11-2 0V8.5H11a1 1 0 110-2h2.5V4a1 1 0 011-1z" />
               </svg>
             </button>
           </MenuItem>
-          <MenuItem
-            v-if="props.playlist.user_id === mainStore.user?.id"
-            v-slot="{ active }"
-          >
-            <button
-              @click="showConfirmationModal = true"
-              :class="[
-                active ? 'bg-red-950 text-white' : 'text-red-500',
-                'group flex w-full items-center px-2 py-2 text-sm border-t border-gray-700',
-              ]"
-            >
-              Eliminar de la playlist
-              <svg
-                class="w-5 h-5 text-red-500 ml-3.5"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="currentColor"
-                viewBox="0 0 18 20"
+
+          <template v-if="props.playlist.user_id === mainStore.user?.id">
+            <div class="h-[1px] bg-white/5 my-1 mx-2"></div>
+            <MenuItem v-slot="{ active }">
+              <button
+                @click="showConfirmationModal = true"
+                :class="[
+                  active ? 'bg-red-500/20 text-red-400' : 'text-gray-400',
+                  'group flex w-full items-center justify-between px-4 py-2.5 text-sm rounded-xl transition-colors',
+                ]"
               >
-                <path
-                  d="M17 4h-4V2a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v2H1a1 1 0 0 0 0 2h1v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6h1a1 1 0 1 0 0-2ZM7 2h4v2H7V2Zm1 14a1 1 0 1 1-2 0V8a1 1 0 0 1 2 0v8Zm4 0a1 1 0 0 1-2 0V8a1 1 0 0 1 2 0v8Z"
-                />
-              </svg>
-            </button>
-          </MenuItem>
+                <span>Remover de playlist</span>
+                <svg class="w-4 h-4 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </MenuItem>
+          </template>
         </div>
       </MenuItems>
     </transition>

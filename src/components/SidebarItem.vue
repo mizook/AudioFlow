@@ -2,18 +2,19 @@
   <RouterLink
     v-if="pageUrl"
     :to="pageUrl || '/'"
-    class="w-[67px] md:w-[100%] flex h-12 hover:bg-[#1A1A1A] transition-all duration-300 ease-in-out rounded-lg"
-    @mouseenter="isHover"
-    @mouseleave="isHover"
+    class="w-full flex items-center h-12 hover:bg-white/10 transition-all duration-300 ease-in-out rounded-lg group"
+    :class="mainStore.isSidebarCollapsed ? 'justify-center px-0' : 'justify-start px-3'"
+    @mouseenter="optionIsHover = true"
+    @mouseleave="optionIsHover = false"
   >
-    <img :src="iconUrl" alt="Icon Image" :class="`${ml} ${mt} ${w} ${h}`" />
+    <div class="flex items-center justify-center min-w-[32px]">
+      <img :src="iconUrl" alt="Icon Image" :class="`${w} ${h}`" />
+    </div>
 
     <h1
-      :class="`${pl} ${pt} text-lg font-semibold opacity-0 md:opacity-100 ${
-        optionIsHover
-          ? 'text-white transition-all duration-300 ease-in'
-          : 'text-[#A7A7A7] transition-all duration-300 ease-out'
-      }`"
+      v-if="!mainStore.isSidebarCollapsed"
+      class="ml-4 text-lg font-semibold transition-all duration-300 hidden md:block truncate"
+      :class="optionIsHover ? 'text-white' : 'text-gray-400'"
     >
       {{ message }}
     </h1>
@@ -21,18 +22,19 @@
 
   <div
     v-if="!pageUrl"
-    class="w-[67px] md:w-[100%] flex h-12 hover:bg-[#1A1A1A] transition-all duration-300 ease-in-out rounded-lg cursor-pointer"
-    @mouseenter="isHover"
-    @mouseleave="isHover"
+    class="w-full flex items-center h-12 hover:bg-white/10 transition-all duration-300 ease-in-out rounded-lg cursor-pointer group"
+    :class="mainStore.isSidebarCollapsed ? 'justify-center px-0' : 'justify-start px-3'"
+    @mouseenter="optionIsHover = true"
+    @mouseleave="optionIsHover = false"
   >
-    <img :src="iconUrl" alt="Icon Image" :class="`${ml} ${mt} ${w} ${h}`" />
+    <div class="flex items-center justify-center min-w-[32px]">
+      <img :src="iconUrl" alt="Icon Image" :class="`${w} ${h}`" />
+    </div>
 
     <h1
-      :class="`${pl} ${pt} text-lg font-semibold opacity-0 md:opacity-100 ${
-        optionIsHover
-          ? 'text-white transition-all duration-300 ease-in'
-          : 'text-[#A7A7A7] transition-all duration-300 ease-out'
-      }`"
+      v-if="!mainStore.isSidebarCollapsed"
+      class="ml-4 flex items-center text-lg font-semibold transition-all duration-300 hidden md:block truncate"
+      :class="optionIsHover ? 'text-white' : 'text-gray-400'"
     >
       {{ message }}
     </h1>
@@ -42,6 +44,9 @@
 <script setup>
 import { ref } from "vue";
 import { RouterLink } from "vue-router";
+import { useMainStore } from "@/stores/main";
+
+const mainStore = useMainStore();
 
 const props = defineProps({
   pageUrl: String,
@@ -56,8 +61,4 @@ const props = defineProps({
 });
 
 let optionIsHover = ref(false);
-
-function isHover() {
-  optionIsHover.value = !optionIsHover.value;
-}
 </script>

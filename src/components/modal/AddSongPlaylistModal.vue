@@ -91,9 +91,9 @@ import { useMainStore } from "@/stores/main";
 
 const mainStore = useMainStore();
 
-const isOpen = ref < boolean > true;
-const isLoading = ref < boolean > false;
-const errors = ref < string > "";
+const isOpen = ref(true);
+const isLoading = ref(false);
+const errors = ref("");
 
 const props = defineProps({
   song: {

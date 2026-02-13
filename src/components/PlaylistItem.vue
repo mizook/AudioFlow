@@ -38,7 +38,7 @@
 import { useMainStore } from "@/stores/main";
 import { ref } from "vue";
 import { RouterLink } from "vue-router";
-import { defineProps, defineEmits } from "vue";
+
 
 const props = defineProps({
   playlist: {
