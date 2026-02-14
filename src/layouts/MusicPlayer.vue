@@ -1,114 +1,130 @@
 <template>
   <div
     id="MusicPlayer"
-    class="glass-dark w-full h-full flex items-center justify-between px-4 md:px-10 shadow-2xl transition-all duration-500"
+    class="w-full h-full flex items-center justify-between md:px-10 shadow-2xl transition-all duration-500 overflow-hidden relative"
+    :class="{
+       'glass-dark border border-white/10 rounded-2xl': windowWidth >= 768,
+       'bg-[#181818]': windowWidth < 768 && !player.currentSong
+    }"
   >
-    <div class="flex items-center w-[45%] md:w-1/4 overflow-hidden">
-      <div v-if="player.currentSong" class="flex items-center w-full">
-        <img
-          class="rounded-lg shadow-lg flex-shrink-0"
-          :width="windowWidth < 768 ? 40 : 60"
-          :src="player.currentSong.coverURL"
-        />
-        <div
-          class="ml-3 group transition-all duration-300 ease-in-out truncate"
-        >
-          <div class="text-[13px] md:text-[14px] text-white hover:underline cursor-pointer font-bold truncate">
-            {{ player.currentSong.name }}
-          </div>
-          <div
-            class="text-[10px] md:text-[11px] text-gray-400 font-medium hover:underline hover:text-white cursor-pointer truncate"
-          >
-            {{ player.currentSong.artist }}
-          </div>
-        </div>
-      </div>
-      <div v-else class="flex items-center space-x-3 opacity-50">
-        <div class="bg-white/10 rounded-lg w-[40px] h-[40px] md:w-[60px] md:h-[60px] flex items-center justify-center">
-          <MusicIcon :size="24" fillColor="#FFFFFF" />
-        </div>
-        <div class="text-xs md:text-sm text-gray-400 italic ml-2">Sin canción</div>
-      </div>
-    </div>
-
+    <!-- Dynamic Background -->
     <div 
-      class="flex-1 flex flex-col items-center justify-center md:max-w-[40%] px-1"
-      :class="{ 'opacity-30 pointer-events-none': !player.currentSong }"
+      v-if="windowWidth < 768 && player.currentSong"
+      class="absolute inset-0 z-0 bg-cover bg-center transition-all duration-700"
+      :style="{ backgroundImage: `url(${player.currentSong.coverURL})` }"
     >
-        <div class="buttons flex items-center justify-center gap-4 md:gap-6 w-full h-[30px] md:h-[35px] mb-1 md:mb-2">
-          <button class="opacity-70 hover:opacity-100 transition-opacity" @click="prevSong">
-            <SkipBackward fillColor="#FFFFFF" :size="windowWidth < 768 ? 22 : 24" />
-          </button>
-          
-          <button class="h-8 w-8 md:h-10 md:w-10 rounded-full bg-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg" @click="togglePlay">
-            <Play v-if="!player.isPlaying" fillColor="#181818" :size="windowWidth < 768 ? 22 : 26" class="ml-0.5" />
-            <Pause v-else fillColor="#181818" :size="windowWidth < 768 ? 22 : 26" />
-          </button>
-
-          <!-- Mobile Lyrics Button -->
-          <button 
-            v-if="windowWidth < 768 && player.currentSong"
-            class="transition-all"
-            @click="playerStore.toggleLyrics()"
-          >
-            <MicrophoneVariant 
-              :size="22" 
-              class="transition-colors"
-              :class="player.showLyrics ? 'text-green-500' : 'text-white/70'"
-            />
-          </button>
-
-          <button class="opacity-70 hover:opacity-100 transition-opacity" @click="nextSong">
-            <SkipForward fillColor="#FFFFFF" :size="windowWidth < 768 ? 22 : 24" />
-          </button>
-        </div>
-
-        <div class="flex items-center w-full group">
-          <div class="text-white text-[10px] pr-2 opacity-60 font-medium">
-            {{ formattedCurrentTime }}
-          </div>
-          <div
-            ref="seekerContainer"
-            class="flex-1 relative h-1 flex items-center cursor-pointer"
-            @mouseenter="isHover = true"
-            @mouseleave="isHover = false"
-          >
-            <input
-              v-model="range"
-              ref="seeker"
-              type="range"
-              class="absolute w-full h-1 z-40 appearance-none bg-transparent cursor-pointer focus:outline-none custom-slider"
-              @input="updateAudioTime"
-            />
-            <div
-              class="pointer-events-none absolute h-full z-10 rounded-full transition-colors duration-200"
-              :style="`width: ${range}%;`"
-              :class="isHover ? 'bg-green-500' : 'bg-white'"
-            />
-            <div
-              class="absolute h-full z-0 w-full bg-white/10 rounded-full"
-            />
-          </div>
-          <div class="text-white text-[10px] pl-2 opacity-60 font-medium">
-            {{ formattedDuration }}
-          </div>
-        </div>
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-md"></div>
     </div>
 
-    <div
-      class="hidden md:flex items-center w-1/4 justify-end pr-4 space-x-4"
-    >
-      <button 
-        v-if="player.currentSong"
-        @click="playerStore.toggleLyrics()"
-        class="p-2 rounded-full hover:bg-white/10 transition-all group/lyrics relative"
-        :class="{ 'bg-white/20': player.showLyrics }"
-        title="Ver letra"
-      >
-        <MicrophoneVariant :size="20" class="text-white opacity-60 group-hover/lyrics:opacity-100 transition-opacity" />
-        <div class="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full scale-0 group-hover/lyrics:scale-100 transition-transform"></div>
-      </button>
-      <MusicPlayerVolume />
+    <!-- Content Wrapper -->
+    <div class="relative z-10 w-full h-full">
+        <!-- Desktop Layout (> 768px) -->
+        <div v-if="windowWidth >= 768" class="flex w-full justify-between items-center h-full">
+            <div class="flex items-center w-1/4 overflow-hidden">
+                <div v-if="player.currentSong" class="flex items-center w-full">
+                    <img class="rounded-lg shadow-lg flex-shrink-0" :width="60" :src="player.currentSong.coverURL" />
+                    <div class="ml-3 group transition-all duration-300 ease-in-out truncate">
+                        <div class="text-[14px] text-white hover:underline cursor-pointer font-bold truncate">
+                            {{ player.currentSong.name }}
+                        </div>
+                        <div class="text-[11px] text-gray-400 font-medium hover:underline hover:text-white cursor-pointer truncate">
+                            {{ player.currentSong.artist }}
+                        </div>
+                    </div>
+                </div>
+                <div v-else class="flex items-center space-x-3 opacity-50">
+                    <div class="bg-white/10 rounded-lg w-[60px] h-[60px] flex items-center justify-center">
+                        <MusicIcon :size="24" fillColor="#FFFFFF" />
+                    </div>
+                    <div class="text-sm text-gray-400 italic ml-2">Sin canción</div>
+                </div>
+            </div>
+
+            <div class="flex-1 flex flex-col items-center justify-center max-w-[40%] px-1" :class="{ 'opacity-30 pointer-events-none': !player.currentSong }">
+                <div class="buttons flex items-center justify-center gap-6 w-full h-[35px] mb-2">
+                    <button class="opacity-70 hover:opacity-100 transition-opacity" @click="prevSong">
+                        <SkipBackward fillColor="#FFFFFF" :size="24" />
+                    </button>
+                    <button class="h-10 w-10 rounded-full bg-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg" @click="togglePlay">
+                        <Play v-if="!player.isPlaying" fillColor="#181818" :size="26" class="ml-0.5" />
+                        <Pause v-else fillColor="#181818" :size="26" />
+                    </button>
+                    <button class="opacity-70 hover:opacity-100 transition-opacity" @click="nextSong">
+                        <SkipForward fillColor="#FFFFFF" :size="24" />
+                    </button>
+                </div>
+
+                <div class="flex items-center w-full group">
+                    <div class="text-white text-[10px] pr-2 opacity-60 font-medium">{{ formattedCurrentTime }}</div>
+                    <div ref="seekerContainer" class="flex-1 relative h-1 flex items-center cursor-pointer" @mouseenter="isHover = true" @mouseleave="isHover = false">
+                        <input v-model="range" ref="seeker" type="range" class="absolute w-full h-1 z-40 appearance-none bg-transparent cursor-pointer focus:outline-none custom-slider" @input="updateAudioTime" />
+                        <div class="pointer-events-none absolute h-full z-10 rounded-full transition-colors duration-200" :style="`width: ${range}%;`" :class="isHover ? 'bg-green-500' : 'bg-white'" />
+                        <div class="absolute h-full z-0 w-full bg-white/10 rounded-full" />
+                    </div>
+                    <div class="text-white text-[10px] pl-2 opacity-60 font-medium">{{ formattedDuration }}</div>
+                </div>
+            </div>
+
+            <div class="flex items-center w-1/4 justify-end pr-4 space-x-4">
+                <button v-if="player.currentSong" @click="playerStore.toggleLyrics()" class="p-2 rounded-full hover:bg-white/10 transition-all group/lyrics relative" :class="{ 'bg-white/20': player.showLyrics }" title="Ver letra">
+                    <MicrophoneVariant :size="20" class="text-white opacity-60 group-hover/lyrics:opacity-100 transition-opacity" />
+                    <div class="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full scale-0 group-hover/lyrics:scale-100 transition-transform"></div>
+                </button>
+                <MusicPlayerVolume />
+            </div>
+        </div>
+
+        <!-- Mobile Layout (< 768px) -->
+        <div v-else class="w-full h-full relative">
+            <!-- Song Info (Left) -->
+            <div class="absolute top-1/2 -translate-y-1/2 left-0 max-w-[45%] h-full flex items-center overflow-hidden z-20 pointer-events-none pl-3">
+                 <div v-if="player.currentSong" class="flex items-center w-full pointer-events-auto">
+                    <img class="rounded shadow-lg flex-shrink-0" :width="36" :src="player.currentSong.coverURL" />
+                    <div class="ml-2 group transition-all duration-300 ease-in-out truncate">
+                        <div class="text-[12px] text-white font-bold truncate">{{ player.currentSong.name }}</div>
+                        <div class="text-[10px] text-gray-300 font-medium truncate">{{ player.currentSong.artist }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls (Centered Absolutely) -->
+            <div class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none" :class="{ 'opacity-30': !player.currentSong }">
+                <div class="relative flex items-center justify-center pointer-events-auto"> 
+                    <!-- Play (Center Anchor) -->
+                    <button class="h-8 w-8 rounded-full bg-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg z-10" @click="togglePlay">
+                        <Play v-if="!player.isPlaying" fillColor="#181818" :size="20" class="ml-0.5" />
+                        <Pause v-else fillColor="#181818" :size="20" />
+                    </button>
+
+                    <!-- Prev (Left of Play) -->
+                    <div class="absolute right-full mr-3 flex items-center">
+                        <button class="opacity-70 hover:opacity-100 transition-opacity" @click="prevSong">
+                            <SkipBackward fillColor="#FFFFFF" :size="20" />
+                        </button>
+                    </div>
+
+                    <!-- Next & Lyrics (Right of Play) -->
+                    <div class="absolute left-full ml-3 flex items-center gap-3">
+                        <button class="opacity-70 hover:opacity-100 transition-opacity" @click="nextSong">
+                            <SkipForward fillColor="#FFFFFF" :size="20" />
+                        </button>
+                        
+                        <button v-if="player.currentSong" class="transition-all" @click="playerStore.toggleLyrics()">
+                            <MicrophoneVariant :size="18" class="transition-colors" :class="player.showLyrics ? 'text-green-500' : 'text-white/70'" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seeker (Bottom Edge) -->
+            <div class="absolute bottom-[1px] left-0 w-full h-[3px] z-30" :class="{ 'opacity-30 pointer-events-none': !player.currentSong }">
+                 <div ref="seekerContainer" class="w-full h-full relative cursor-pointer group">
+                    <input v-model="range" ref="seeker" type="range" class="absolute w-full h-full z-40 appearance-none bg-transparent cursor-pointer focus:outline-none custom-slider opacity-0 group-hover:opacity-100" @input="updateAudioTime" />
+                    <div class="pointer-events-none absolute h-full z-10 transition-colors duration-200 bg-white" :style="`width: ${range}%;`" />
+                    <div class="absolute h-full z-0 w-full bg-white/20" />
+                </div>
+            </div>
+        </div>
     </div>
   </div>
 </template>

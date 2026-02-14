@@ -8,7 +8,37 @@
     @close="showCreatePlaylistModal = false"
   ></CreatePlaylistModal>
 
+  <!-- Mobile Bottom Navbar -->
+  <div 
+    v-if="windowWidth < 768"
+    class="fixed bottom-0 left-0 right-0 h-[60px] bg-black z-50 flex items-center justify-around border-t border-white/10"
+  >
+      <SidebarItem
+        pageUrl="/"
+        iconUrl="/images/icons/home-icon.png"
+        message=""
+        w="w-6"
+        h="h-6"
+      />
+      <SidebarItem
+        pageUrl="/search"
+        iconUrl="/images/icons/search-icon.png"
+        message=""
+        w="w-6"
+        h="h-6"
+      />
+      <SidebarItem
+        pageUrl="/library"
+        iconUrl="/images/icons/library-icon.png"
+        message=""
+        w="w-6"
+        h="h-6"
+      />
+  </div>
+
+  <!-- Desktop Sidebar -->
   <div
+    v-else
     :style="{ width: mainStore.sidebarWidth + 'px' }"
     :class="[
       'flex flex-col flex-shrink-0 transition-all duration-300 ease-in-out gap-2 relative group h-full'
@@ -98,7 +128,6 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { useMainStore } from "@/stores/main";

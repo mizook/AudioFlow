@@ -1,7 +1,9 @@
+const cheerio = require('cheerio');
+
 module.exports = async function handler(req, res) {
     const { q } = req.query;
 
-    // Set CORS headers to allow requests from any origin (or unrestricted)
+    // Set CORS headers
     res.setHeader('Access-Control-Allow-Credentials', true);
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -32,7 +34,7 @@ module.exports = async function handler(req, res) {
     try {
         console.log(`[Serverless] Searching Genius for: ${q}`);
 
-        // 1. Search for the song in Genius API using native fetch
+        // 1. Search for the song
         const searchUrl = `https://api.genius.com/search?q=${encodeURIComponent(q)}`;
         const searchResponse = await fetch(searchUrl, {
             headers: {
@@ -52,68 +54,62 @@ module.exports = async function handler(req, res) {
             return res.status(404).json({ error: 'No songs found' });
         }
 
-        // Get the first result's URL
         const songPath = hits[0].result.path;
         const songUrl = `https://genius.com${songPath}`;
         console.log(`[Serverless] Found song URL: ${songUrl}`);
 
-        // 2. Scrape the lyrics page
+        // 2. Fetch the lyrics page
         const pageResponse = await fetch(songUrl);
         if (!pageResponse.ok) {
             throw new Error(`Failed to fetch song page: ${pageResponse.status}`);
         }
         const html = await pageResponse.text();
 
-        // 3. Extract lyrics using Regex (Zero Dependency)
-        // Look for content inside data-lyrics-container="true"
-        // Pattern: <div data-lyrics-container="true" ...>(content)</div>
-        // We need to handle nested tags like <br>, <i>, <a> etc.
+        // 3. Extract lyrics using Cheerio
+        const $ = cheerio.load(html);
 
+        // Genius stores lyrics in containers with data-lyrics-container="true"
+        // or sometimes in a div with class starting with Lyrics__Container
         let lyrics = '';
 
-        // Simple regex to find the container contents
-        // Note: This is less robust than cheerio but works for standard Genius pages implies we clean tags later
-        const containerRegex = /data-lyrics-container="true"[^>]*>([\s\S]*?)<\/div>/g;
-        let match;
+        // Remove script tags and style tags just in case
+        $('script').remove();
+        $('style').remove();
 
-        while ((match = containerRegex.exec(html)) !== null) {
-            let content = match[1];
-            // Replace <br> with newlines
-            content = content.replace(/<br\s*\/?>/gi, '\n');
-            // Remove all other HTML tags
-            content = content.replace(/<[^>]*>/g, '');
-            // Decode HTML entities (basic ones)
-            content = content.replace(/&amp;/g, '&')
-                .replace(/&lt;/g, '<')
-                .replace(/&gt;/g, '>')
-                .replace(/&quot;/g, '"')
-                .replace(/&#x27;/g, "'");
+        // Option A: data-lyrics-container="true"
+        const containers = $('[data-lyrics-container="true"]');
 
-            lyrics += content + '\n';
-        }
-
-        if (!lyrics.trim()) {
-            // Fallback: Try regex for class "Lyrics__Container"
-            const fallbackRegex = /class="[^"]*Lyrics__Container[^"]*"[^>]*>([\s\S]*?)<\/div>/g;
-            while ((match = fallbackRegex.exec(html)) !== null) {
-                let content = match[1];
-                content = content.replace(/<br\s*\/?>/gi, '\n');
-                content = content.replace(/<[^>]*>/g, '');
-                lyrics += content + '\n';
+        if (containers.length > 0) {
+            containers.each((i, el) => {
+                // Replace <br> with newlines
+                $(el).find('br').replaceWith('\n');
+                lyrics += $(el).text() + '\n';
+            });
+        } else {
+            // Option B: Fallback to Lyrics__Container class
+            const fallbackContainers = $('div[class^="Lyrics__Container"]');
+            if (fallbackContainers.length > 0) {
+                fallbackContainers.each((i, el) => {
+                    $(el).find('br').replaceWith('\n');
+                    lyrics += $(el).text() + '\n';
+                });
             }
         }
 
         if (!lyrics.trim()) {
-            console.error("[Serverless] Lyrics content empty after regex parsing.");
             return res.status(404).json({ error: 'Lyrics content not found on page' });
         }
 
-        // Clean up
-        lyrics = lyrics.replace(/\[.*?\]/g, '').trim();
-        lyrics = lyrics.replace(/\n{3,}/g, '\n\n').trim();
+        // querySelectorAll in Cheerio is $(...)
+        // We already extracted text.
 
-        console.log("[Serverless] Lyrics extracted successfully");
-        return res.status(200).json({ lyrics, source: 'Genius via Vercel (Regex)' });
+        // Clean up
+        lyrics = lyrics.trim();
+        // Ensure no more than 2 newlines
+        lyrics = lyrics.replace(/\n{3,}/g, '\n\n');
+
+        console.log("[Serverless] Lyrics extracted successfully (Cheerio)");
+        return res.status(200).json({ lyrics, source: 'Genius via Vercel (Cheerio)' });
 
     } catch (error) {
         console.error('[Serverless] Handler Error:', error.message);
