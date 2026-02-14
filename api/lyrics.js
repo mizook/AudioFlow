@@ -35,8 +35,10 @@ module.exports = async function handler(req, res) {
         console.log(`[Serverless] Searching Genius for: ${q}`);
 
         // 1. Search for the song
-        const searchUrl = `https://api.genius.com/search?q=${encodeURIComponent(q)}`;
-        const searchResponse = await fetch(searchUrl, {
+        const searchUrl = new URL('https://api.genius.com/search');
+        searchUrl.searchParams.append('q', q);
+
+        const searchResponse = await fetch(searchUrl.toString(), {
             headers: {
                 'Authorization': `Bearer ${GENIUS_ACCESS_TOKEN}`
             }

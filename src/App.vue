@@ -4,24 +4,30 @@
 
     <div class="flex-1 flex flex-col min-w-0 h-full md:gap-2 relative">
       <div
-        class="bg-[#121212] text-white flex-1 md:rounded-lg overflow-hidden relative mb-[90px] md:mb-0"
+        class="bg-[#121212] text-white flex-1 md:rounded-lg overflow-hidden relative mb-[90px] md:mb-0 flex flex-col"
         id="ViewBlock"
       >
-        <div class="h-full w-full overflow-auto custom-scrollbar pb-24 md:pb-0">
-          <TopNav></TopNav>
-          <RouterView />
+        <!-- Top Navigation (Fixed at top) -->
+        <TopNav class="flex-shrink-0 z-20" />
+
+        <!-- Content Area (Relative for positioning Lyrics over RouterView) -->
+        <div class="flex-1 relative w-full overflow-hidden">
+            <!-- Main Scrollable Content -->
+            <div class="w-full h-full overflow-y-auto custom-scrollbar pb-24 md:pb-0">
+                 <RouterView />
+            </div>
+
+            <!-- Lyrics Immersive Layer (Absolute overlay in content area) -->
+            <Transition name="fade">
+                <div 
+                  v-if="player.showLyrics && player.currentSong" 
+                  class="absolute inset-0 z-30 bg-black/95"
+                >
+                  <LyricsView :song="player.currentSong" />
+                </div>
+            </Transition>
         </div>
       </div>
-
-      <!-- Lyrics Immersive Layer -->
-      <Transition name="fade">
-        <div 
-          v-if="player.showLyrics && player.currentSong" 
-          class="fixed inset-0 z-30 bg-black/95"
-        >
-          <LyricsView :song="player.currentSong" />
-        </div>
-      </Transition>
 
       <div class="fixed bottom-[60px] left-0 right-0 z-40 h-[70px] p-[2px] md:static md:p-0 md:h-[110px] w-full overflow-hidden md:rounded-2xl">
         <MusicPlayer />

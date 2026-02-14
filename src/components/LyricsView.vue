@@ -123,7 +123,18 @@ const fetchLyrics = async () => {
     return;
   }
 
-  const query = `${props.song.name} ${props.song.artist}`;
+  // Clean query: remove text in parentheses/brackets (e.g. "feat.", "Remix") for better matching
+  const cleanText = (text) => {
+    return text
+      .replace(/\s*\(.*?\)/g, '') // Remove (...)
+      .replace(/\s*\[.*?\]/g, '') // Remove [...]
+      .replace(/\s*\{.*?\}/g, '') // Remove {...}
+      .trim();
+  };
+
+  const cleanName = cleanText(props.song.name);
+  const cleanArtist = cleanText(props.song.artist);
+  const query = `${cleanName} ${cleanArtist}`;
   
   loading.value = true;
   error.value = "";
