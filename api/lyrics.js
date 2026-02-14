@@ -31,26 +31,24 @@ module.exports = async function handler(req, res) {
         });
     }
 
+    const axios = require('axios');
+
     try {
         console.log(`[Serverless] Searching Genius for: ${q}`);
 
         // 1. Search for the song
-        const searchUrl = new URL('https://api.genius.com/search');
-        searchUrl.searchParams.append('q', q);
+        const searchUrl = 'https://api.genius.com/search';
 
-        const searchResponse = await fetch(searchUrl.toString(), {
+        const searchResponse = await axios.get(searchUrl, {
+            params: { q },
+            timeout: 12000,
             headers: {
-                'Authorization': `Bearer ${GENIUS_ACCESS_TOKEN}`
+                'Authorization': `Bearer ${GENIUS_ACCESS_TOKEN}`,
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
             }
         });
 
-        if (!searchResponse.ok) {
-            const errText = await searchResponse.text();
-            throw new Error(`Genius API responded with ${searchResponse.status}: ${errText}`);
-        }
-
-        const searchData = await searchResponse.json();
-        const hits = searchData.response.hits;
+        const hits = searchResponse.data.response.hits;
 
         if (!hits || hits.length === 0) {
             return res.status(404).json({ error: 'No songs found' });
@@ -61,11 +59,13 @@ module.exports = async function handler(req, res) {
         console.log(`[Serverless] Found song URL: ${songUrl}`);
 
         // 2. Fetch the lyrics page
-        const pageResponse = await fetch(songUrl);
-        if (!pageResponse.ok) {
-            throw new Error(`Failed to fetch song page: ${pageResponse.status}`);
-        }
-        const html = await pageResponse.text();
+        const pageResponse = await axios.get(songUrl, {
+            timeout: 12000,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        });
+        const html = pageResponse.data;
 
         // 3. Extract lyrics using Cheerio
         const $ = cheerio.load(html);
@@ -114,10 +114,13 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ lyrics, source: 'Genius via Vercel (Cheerio)' });
 
     } catch (error) {
-        console.error('[Serverless] Handler Error:', error.message);
+        const status = error?.response?.status || 500;
+        const details = error?.response?.data?.meta?.message || error?.response?.data?.error_description || error.message;
+        console.error('[Serverless] Handler Error:', details);
         return res.status(500).json({
             error: 'Internal Server Error',
-            details: error.message
+            details,
+            status
         });
     }
 };

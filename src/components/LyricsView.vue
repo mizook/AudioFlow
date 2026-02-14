@@ -101,6 +101,7 @@ const props = defineProps({
 });
 
 const playerStore = usePlayerStore();
+const isDev = import.meta.env.DEV;
 
 
 
@@ -142,11 +143,12 @@ const fetchLyrics = async () => {
 
   try {
     // 1. Try Vercel Serverless Function (internal API) first
-    // This will work in Production (Vercel) but fail locally with Vite (404)
+    // In production this is the only supported path.
+    let apiError = null;
     try {
         const response = await axios.get(`/api/lyrics`, {
             params: { q: query },
-            timeout: 5000 // Short timeout to fail fast locally
+        timeout: 20000
         });
         
         const finalLyrics = response.data.lyrics;
@@ -158,11 +160,16 @@ const fetchLyrics = async () => {
             return; // Success via API!
         }
     } catch (apiErr) {
-        console.warn("Internal API failed (expected locally), trying fallbacks...", apiErr.message);
-        // Continue to fallback logic below
+          apiError = apiErr;
+          const apiDetails = apiErr?.response?.data?.details || apiErr?.response?.data?.error || apiErr.message;
+          console.warn("Internal API failed:", apiDetails);
+
+          if (!isDev) {
+            throw new Error(apiDetails || "Error en la API de letras.");
+          }
     }
 
-    // 2. Fallback: Client-side Scraping with Proxies (for Localhost / Backup)
+        // 2. Fallback: Client-side scraping with proxies (DEV only)
     const ACCESS_TOKEN = import.meta.env.VITE_GENIUS_ACCESS_TOKEN; 
     const SEARCH_URL = "https://api.genius.com/search";
     
@@ -195,7 +202,9 @@ const fetchLyrics = async () => {
         throw lastError || new Error("No se pudo conectar con los servidores de letras.");
     };
 
-    if (!ACCESS_TOKEN) throw new Error("API Token missing for fallback.");
+    if (!ACCESS_TOKEN) {
+      throw new Error(apiError?.message || "API Token missing for fallback in development.");
+    }
 
     const searchUrl = `${SEARCH_URL}?q=${encodeURIComponent(query)}&access_token=${ACCESS_TOKEN}`;
     const searchContents = await fetchWithProxy(searchUrl);
@@ -236,7 +245,7 @@ const fetchLyrics = async () => {
 
   } catch (err) {
     console.error("All fetch methods failed:", err);
-    error.value = "No pudimos encontrar la letra de esta canción.";
+    error.value = err?.message || "No pudimos encontrar la letra de esta canción.";
   } finally {
     loading.value = false;
   }
