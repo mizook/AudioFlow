@@ -19,7 +19,10 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'Query parameter "q" is required' });
     }
 
-    const GENIUS_ACCESS_TOKEN = process.env.GENIUS_ACCESS_TOKEN || process.env.VITE_GENIUS_ACCESS_TOKEN;
+    const rawToken = process.env.GENIUS_ACCESS_TOKEN || process.env.VITE_GENIUS_ACCESS_TOKEN;
+    const GENIUS_ACCESS_TOKEN = rawToken
+        ? rawToken.replace(/^Bearer\s+/i, '').trim()
+        : '';
 
     if (!GENIUS_ACCESS_TOKEN) {
         console.error("[Serverless] CRITICAL: GENIUS_ACCESS_TOKEN is missing.");
