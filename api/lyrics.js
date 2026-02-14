@@ -1,5 +1,3 @@
-const cheerio = require('cheerio');
-
 module.exports = async function handler(req, res) {
     const { q } = req.query;
 
@@ -21,7 +19,7 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'Query parameter "q" is required' });
     }
 
-    const GENIUS_ACCESS_TOKEN = process.env.VITE_GENIUS_ACCESS_TOKEN || process.env.GENIUS_ACCESS_TOKEN;
+    const GENIUS_ACCESS_TOKEN = process.env.GENIUS_ACCESS_TOKEN || process.env.VITE_GENIUS_ACCESS_TOKEN;
 
     if (!GENIUS_ACCESS_TOKEN) {
         console.error("[Serverless] CRITICAL: GENIUS_ACCESS_TOKEN is missing.");
@@ -67,8 +65,10 @@ module.exports = async function handler(req, res) {
         });
         const html = pageResponse.data;
 
+        const { load } = await import('cheerio');
+
         // 3. Extract lyrics using Cheerio
-        const $ = cheerio.load(html);
+        const $ = load(html);
 
         // Genius stores lyrics in containers with data-lyrics-container="true"
         // or sometimes in a div with class starting with Lyrics__Container
@@ -116,10 +116,13 @@ module.exports = async function handler(req, res) {
     } catch (error) {
         const status = error?.response?.status || 500;
         const details = error?.response?.data?.meta?.message || error?.response?.data?.error_description || error.message;
+        const isAuthError = status === 401 || status === 403;
         console.error('[Serverless] Handler Error:', details);
-        return res.status(500).json({
-            error: 'Internal Server Error',
-            details,
+        return res.status(isAuthError ? 502 : 500).json({
+            error: isAuthError ? 'Genius Authentication Error' : 'Internal Server Error',
+            details: isAuthError
+                ? `${details}. Revisa GENIUS_ACCESS_TOKEN en Vercel (entorno Production).`
+                : details,
             status
         });
     }
