@@ -1,5 +1,5 @@
 module.exports = async function handler(req, res) {
-    const { q } = req.query;
+    const { q, debug_env } = req.query;
 
     // Set CORS headers
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -15,20 +15,41 @@ module.exports = async function handler(req, res) {
         return;
     }
 
-    if (!q) {
-        return res.status(400).json({ error: 'Query parameter "q" is required' });
-    }
-
-    const rawToken = process.env.GENIUS_ACCESS_TOKEN || process.env.VITE_GENIUS_ACCESS_TOKEN;
+    const rawToken = process.env.VITE_GENIUS_ACCESS_TOKEN;
+    const tokenSource = rawToken ? 'VITE_GENIUS_ACCESS_TOKEN' : 'none';
     const GENIUS_ACCESS_TOKEN = rawToken
         ? rawToken.replace(/^Bearer\s+/i, '').trim()
         : '';
 
+    const tokenFingerprint = GENIUS_ACCESS_TOKEN
+        ? require('crypto').createHash('sha256').update(GENIUS_ACCESS_TOKEN).digest('hex').slice(0, 12)
+        : null;
+
+    if (debug_env === '1') {
+        return res.status(200).json({
+            ok: true,
+            vercelEnv: process.env.VERCEL_ENV || null,
+            nodeEnv: process.env.NODE_ENV || null,
+            tokenSource,
+            hasClientToken: Boolean(rawToken),
+            rawLength: rawToken ? rawToken.length : 0,
+            normalizedLength: GENIUS_ACCESS_TOKEN.length,
+            startsWithBearer: rawToken ? /^Bearer\s+/i.test(rawToken) : false,
+            fingerprint: tokenFingerprint,
+            note: 'No se expone el token completo; usa fingerprint para comparar valores entre entornos.'
+        });
+    }
+
+    if (!q) {
+        return res.status(400).json({ error: 'Query parameter "q" is required' });
+    }
+
     if (!GENIUS_ACCESS_TOKEN) {
-        console.error("[Serverless] CRITICAL: GENIUS_ACCESS_TOKEN is missing.");
+        console.error("[Serverless] CRITICAL: VITE_GENIUS_ACCESS_TOKEN is missing.");
         return res.status(500).json({
             error: 'Configuration Error',
-            details: 'GENIUS_ACCESS_TOKEN is missing in Vercel Environment Variables.'
+            details: 'VITE_GENIUS_ACCESS_TOKEN is missing in Vercel Environment Variables.',
+            tokenSource
         });
     }
 
@@ -58,7 +79,7 @@ module.exports = async function handler(req, res) {
             return res.status(isSearchAuthError ? 502 : 500).json({
                 error: isSearchAuthError ? 'Genius Authentication Error' : 'Genius Search Error',
                 details: isSearchAuthError
-                    ? `${searchDetails}. Revisa GENIUS_ACCESS_TOKEN en Vercel (entorno Production).`
+                    ? `${searchDetails}. Revisa VITE_GENIUS_ACCESS_TOKEN en Vercel (entorno Production).`
                     : searchDetails,
                 status: searchStatus,
                 stage: 'genius-search'
