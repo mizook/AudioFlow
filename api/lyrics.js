@@ -1,7 +1,7 @@
-import axios from 'axios';
-import * as cheerio from 'cheerio';
+const axios = require('axios');
+const cheerio = require('cheerio');
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     const { q } = req.query;
 
     if (!q) {
@@ -43,10 +43,9 @@ export default async function handler(req, res) {
         const $ = cheerio.load(html);
 
         // 3. Extract lyrics
-        // Genius uses data-lyrics-container or older classes
         let lyrics = '';
 
-        // Selectors used by Genius (modern and legacy)
+        // Selectors used by Genius
         const selectors = ['[data-lyrics-container="true"]', '.lyrics', '.Lyrics__Container-sc-1ynbvzw-5'];
 
         selectors.forEach(selector => {
@@ -57,9 +56,8 @@ export default async function handler(req, res) {
             });
         });
 
-        // Fallback: Try regex extraction if selectors fail (sometimes classes are dynamic)
+        // Fallback extraction
         if (!lyrics.trim()) {
-            // Try getting all text from divs that *look* like containers
             $('div[class*="Lyrics__Container"]').each((i, el) => {
                 $(el).find('br').replaceWith('\n');
                 lyrics += $(el).text() + '\n';
@@ -72,7 +70,7 @@ export default async function handler(req, res) {
         }
 
         // Clean up lyrics
-        lyrics = lyrics.replace(/\[.*?\]/g, '').trim(); // Remove [Chorus], etc optional
+        lyrics = lyrics.replace(/\[.*?\]/g, '').trim();
         lyrics = lyrics.replace(/\n{3,}/g, '\n\n').trim();
 
         console.log("Lyrics extracted successfully");
@@ -85,4 +83,4 @@ export default async function handler(req, res) {
         }
         return res.status(500).json({ error: 'Failed to fetch lyrics', details: error.message });
     }
-}
+};
