@@ -40,14 +40,30 @@ module.exports = async function handler(req, res) {
         // 1. Search for the song
         const searchUrl = 'https://api.genius.com/search';
 
-        const searchResponse = await axios.get(searchUrl, {
-            params: { q },
-            timeout: 12000,
-            headers: {
-                'Authorization': `Bearer ${GENIUS_ACCESS_TOKEN}`,
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
-        });
+        let searchResponse;
+        try {
+            searchResponse = await axios.get(searchUrl, {
+                params: { q },
+                timeout: 12000,
+                headers: {
+                    'Authorization': `Bearer ${GENIUS_ACCESS_TOKEN}`,
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            });
+        } catch (searchError) {
+            const searchStatus = searchError?.response?.status || 500;
+            const searchDetails = searchError?.response?.data?.meta?.message || searchError?.response?.data?.error_description || searchError.message;
+            const isSearchAuthError = searchStatus === 401 || searchStatus === 403;
+
+            return res.status(isSearchAuthError ? 502 : 500).json({
+                error: isSearchAuthError ? 'Genius Authentication Error' : 'Genius Search Error',
+                details: isSearchAuthError
+                    ? `${searchDetails}. Revisa GENIUS_ACCESS_TOKEN en Vercel (entorno Production).`
+                    : searchDetails,
+                status: searchStatus,
+                stage: 'genius-search'
+            });
+        }
 
         const hits = searchResponse.data.response.hits;
 
@@ -56,17 +72,58 @@ module.exports = async function handler(req, res) {
         }
 
         const songPath = hits[0].result.path;
+        const songTitle = hits[0].result.title;
+        const songArtist = hits[0].result.primary_artist?.name;
         const songUrl = `https://genius.com${songPath}`;
         console.log(`[Serverless] Found song URL: ${songUrl}`);
 
         // 2. Fetch the lyrics page
-        const pageResponse = await axios.get(songUrl, {
-            timeout: 12000,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        let html = '';
+        try {
+            const pageResponse = await axios.get(songUrl, {
+                timeout: 12000,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            });
+            html = pageResponse.data;
+        } catch (pageError) {
+            const pageStatus = pageError?.response?.status || 500;
+            const pageDetails = pageError?.response?.data?.meta?.message || pageError?.response?.data?.error_description || pageError.message;
+
+            // Fallback provider when Genius blocks HTML requests from serverless IPs.
+            if (songArtist && songTitle) {
+                try {
+                    const fallbackResponse = await axios.get(
+                        `https://api.lyrics.ovh/v1/${encodeURIComponent(songArtist)}/${encodeURIComponent(songTitle)}`,
+                        { timeout: 10000 }
+                    );
+
+                    const fallbackLyrics = fallbackResponse?.data?.lyrics?.trim();
+                    if (fallbackLyrics) {
+                        return res.status(200).json({
+                            lyrics: fallbackLyrics.replace(/\n{3,}/g, '\n\n'),
+                            source: 'lyrics.ovh fallback',
+                            fallback: true,
+                            originalStageError: {
+                                stage: 'genius-page-fetch',
+                                status: pageStatus,
+                                details: pageDetails
+                            }
+                        });
+                    }
+                } catch (fallbackError) {
+                    console.error('[Serverless] Fallback lyrics provider error:', fallbackError.message);
+                }
             }
-        });
-        const html = pageResponse.data;
+
+            return res.status(502).json({
+                error: 'Genius Page Fetch Blocked',
+                details: `La búsqueda en Genius funcionó, pero la página de letras devolvió ${pageStatus} (${pageDetails}).`,
+                status: pageStatus,
+                stage: 'genius-page-fetch'
+            });
+        }
 
         const { load } = await import('cheerio');
 
@@ -102,6 +159,26 @@ module.exports = async function handler(req, res) {
         }
 
         if (!lyrics.trim()) {
+            if (songArtist && songTitle) {
+                try {
+                    const fallbackResponse = await axios.get(
+                        `https://api.lyrics.ovh/v1/${encodeURIComponent(songArtist)}/${encodeURIComponent(songTitle)}`,
+                        { timeout: 10000 }
+                    );
+
+                    const fallbackLyrics = fallbackResponse?.data?.lyrics?.trim();
+                    if (fallbackLyrics) {
+                        return res.status(200).json({
+                            lyrics: fallbackLyrics.replace(/\n{3,}/g, '\n\n'),
+                            source: 'lyrics.ovh fallback',
+                            fallback: true
+                        });
+                    }
+                } catch (fallbackError) {
+                    console.error('[Serverless] Fallback lyrics provider error:', fallbackError.message);
+                }
+            }
+
             return res.status(404).json({ error: 'Lyrics content not found on page' });
         }
 
@@ -119,13 +196,10 @@ module.exports = async function handler(req, res) {
     } catch (error) {
         const status = error?.response?.status || 500;
         const details = error?.response?.data?.meta?.message || error?.response?.data?.error_description || error.message;
-        const isAuthError = status === 401 || status === 403;
         console.error('[Serverless] Handler Error:', details);
-        return res.status(isAuthError ? 502 : 500).json({
-            error: isAuthError ? 'Genius Authentication Error' : 'Internal Server Error',
-            details: isAuthError
-                ? `${details}. Revisa GENIUS_ACCESS_TOKEN en Vercel (entorno Production).`
-                : details,
+        return res.status(500).json({
+            error: 'Internal Server Error',
+            details,
             status
         });
     }
