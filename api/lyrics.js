@@ -1,8 +1,19 @@
-// Remove axios dependency to reduce failure surface
-const cheerio = require('cheerio');
-
 module.exports = async function handler(req, res) {
     const { q } = req.query;
+
+    // Set CORS headers to allow requests from any origin (or unrestricted)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+    );
+
+    if (req.method === 'OPTIONS') {
+        res.status(200).end();
+        return;
+    }
 
     if (!q) {
         return res.status(400).json({ error: 'Query parameter "q" is required' });
@@ -11,10 +22,10 @@ module.exports = async function handler(req, res) {
     const GENIUS_ACCESS_TOKEN = process.env.VITE_GENIUS_ACCESS_TOKEN || process.env.GENIUS_ACCESS_TOKEN;
 
     if (!GENIUS_ACCESS_TOKEN) {
-        console.error("CRITICAL: GENIUS_ACCESS_TOKEN is missing in environment variables.");
+        console.error("[Serverless] CRITICAL: GENIUS_ACCESS_TOKEN is missing.");
         return res.status(500).json({
             error: 'Configuration Error',
-            details: 'GENIUS_ACCESS_TOKEN is missing. Please add it to Vercel Environment Variables.'
+            details: 'GENIUS_ACCESS_TOKEN is missing in Vercel Environment Variables.'
         });
     }
 
@@ -31,7 +42,6 @@ module.exports = async function handler(req, res) {
 
         if (!searchResponse.ok) {
             const errText = await searchResponse.text();
-            console.error(`[Serverless] Genius API Error (${searchResponse.status}):`, errText);
             throw new Error(`Genius API responded with ${searchResponse.status}: ${errText}`);
         }
 
@@ -39,7 +49,6 @@ module.exports = async function handler(req, res) {
         const hits = searchData.response.hits;
 
         if (!hits || hits.length === 0) {
-            console.log("[Serverless] No hits found on Genius API");
             return res.status(404).json({ error: 'No songs found' });
         }
 
@@ -54,41 +63,57 @@ module.exports = async function handler(req, res) {
             throw new Error(`Failed to fetch song page: ${pageResponse.status}`);
         }
         const html = await pageResponse.text();
-        const $ = cheerio.load(html);
 
-        // 3. Extract lyrics
+        // 3. Extract lyrics using Regex (Zero Dependency)
+        // Look for content inside data-lyrics-container="true"
+        // Pattern: <div data-lyrics-container="true" ...>(content)</div>
+        // We need to handle nested tags like <br>, <i>, <a> etc.
+
         let lyrics = '';
 
-        // Clean up <br> tags first
-        $('br').replaceWith('\n');
+        // Simple regex to find the container contents
+        // Note: This is less robust than cheerio but works for standard Genius pages implies we clean tags later
+        const containerRegex = /data-lyrics-container="true"[^>]*>([\s\S]*?)<\/div>/g;
+        let match;
 
-        // Selectors used by Genius
-        const selectors = ['[data-lyrics-container="true"]', '.lyrics', '.Lyrics__Container-sc-1ynbvzw-5'];
+        while ((match = containerRegex.exec(html)) !== null) {
+            let content = match[1];
+            // Replace <br> with newlines
+            content = content.replace(/<br\s*\/?>/gi, '\n');
+            // Remove all other HTML tags
+            content = content.replace(/<[^>]*>/g, '');
+            // Decode HTML entities (basic ones)
+            content = content.replace(/&amp;/g, '&')
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&quot;/g, '"')
+                .replace(/&#x27;/g, "'");
 
-        selectors.forEach(selector => {
-            $(selector).each((i, el) => {
-                lyrics += $(el).text() + '\n';
-            });
-        });
-
-        // Fallback extraction
-        if (!lyrics.trim()) {
-            $('div[class*="Lyrics__Container"]').each((i, el) => {
-                lyrics += $(el).text() + '\n';
-            });
+            lyrics += content + '\n';
         }
 
         if (!lyrics.trim()) {
-            console.error("[Serverless] Lyrics content empty after parsing.");
+            // Fallback: Try regex for class "Lyrics__Container"
+            const fallbackRegex = /class="[^"]*Lyrics__Container[^"]*"[^>]*>([\s\S]*?)<\/div>/g;
+            while ((match = fallbackRegex.exec(html)) !== null) {
+                let content = match[1];
+                content = content.replace(/<br\s*\/?>/gi, '\n');
+                content = content.replace(/<[^>]*>/g, '');
+                lyrics += content + '\n';
+            }
+        }
+
+        if (!lyrics.trim()) {
+            console.error("[Serverless] Lyrics content empty after regex parsing.");
             return res.status(404).json({ error: 'Lyrics content not found on page' });
         }
 
-        // Clean up lyrics
+        // Clean up
         lyrics = lyrics.replace(/\[.*?\]/g, '').trim();
         lyrics = lyrics.replace(/\n{3,}/g, '\n\n').trim();
 
         console.log("[Serverless] Lyrics extracted successfully");
-        return res.status(200).json({ lyrics, source: 'Genius via Vercel' });
+        return res.status(200).json({ lyrics, source: 'Genius via Vercel (Regex)' });
 
     } catch (error) {
         console.error('[Serverless] Handler Error:', error.message);
