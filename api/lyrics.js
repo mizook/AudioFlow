@@ -55,6 +55,57 @@ module.exports = async function handler(req, res) {
 
     const axios = require('axios');
 
+    const fetchFallbackLyrics = async ({ artist, title }) => {
+        if (!artist || !title) return null;
+
+        // 1) lyrics.ovh
+        try {
+            const fallbackResponse = await axios.get(
+                `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`,
+                { timeout: 10000 }
+            );
+
+            const lyrics = fallbackResponse?.data?.lyrics?.trim();
+            if (lyrics) {
+                return {
+                    lyrics: lyrics.replace(/\n{3,}/g, '\n\n'),
+                    source: 'lyrics.ovh fallback'
+                };
+            }
+        } catch (fallbackError) {
+            console.error('[Serverless] lyrics.ovh fallback error:', fallbackError.message);
+        }
+
+        // 2) lrclib
+        try {
+            const lrclibResponse = await axios.get('https://lrclib.net/api/get', {
+                params: {
+                    track_name: title,
+                    artist_name: artist
+                },
+                timeout: 10000,
+                headers: {
+                    'User-Agent': 'AudioFlow/1.0 (https://audio-flow.vercel.app)'
+                }
+            });
+
+            const plainLyrics = lrclibResponse?.data?.plainLyrics?.trim();
+            const syncedLyrics = lrclibResponse?.data?.syncedLyrics?.trim();
+            const lyrics = plainLyrics || syncedLyrics;
+
+            if (lyrics) {
+                return {
+                    lyrics: lyrics.replace(/\n{3,}/g, '\n\n'),
+                    source: 'lrclib fallback'
+                };
+            }
+        } catch (fallbackError) {
+            console.error('[Serverless] lrclib fallback error:', fallbackError.message);
+        }
+
+        return null;
+    };
+
     try {
         console.log(`[Serverless] Searching Genius for: ${q}`);
 
@@ -114,27 +165,22 @@ module.exports = async function handler(req, res) {
 
             // Fallback provider when Genius blocks HTML requests from serverless IPs.
             if (songArtist && songTitle) {
-                try {
-                    const fallbackResponse = await axios.get(
-                        `https://api.lyrics.ovh/v1/${encodeURIComponent(songArtist)}/${encodeURIComponent(songTitle)}`,
-                        { timeout: 10000 }
-                    );
+                const fallbackResult = await fetchFallbackLyrics({
+                    artist: songArtist,
+                    title: songTitle
+                });
 
-                    const fallbackLyrics = fallbackResponse?.data?.lyrics?.trim();
-                    if (fallbackLyrics) {
-                        return res.status(200).json({
-                            lyrics: fallbackLyrics.replace(/\n{3,}/g, '\n\n'),
-                            source: 'lyrics.ovh fallback',
-                            fallback: true,
-                            originalStageError: {
-                                stage: 'genius-page-fetch',
-                                status: pageStatus,
-                                details: pageDetails
-                            }
-                        });
-                    }
-                } catch (fallbackError) {
-                    console.error('[Serverless] Fallback lyrics provider error:', fallbackError.message);
+                if (fallbackResult?.lyrics) {
+                    return res.status(200).json({
+                        lyrics: fallbackResult.lyrics,
+                        source: fallbackResult.source,
+                        fallback: true,
+                        originalStageError: {
+                            stage: 'genius-page-fetch',
+                            status: pageStatus,
+                            details: pageDetails
+                        }
+                    });
                 }
             }
 
@@ -181,22 +227,17 @@ module.exports = async function handler(req, res) {
 
         if (!lyrics.trim()) {
             if (songArtist && songTitle) {
-                try {
-                    const fallbackResponse = await axios.get(
-                        `https://api.lyrics.ovh/v1/${encodeURIComponent(songArtist)}/${encodeURIComponent(songTitle)}`,
-                        { timeout: 10000 }
-                    );
+                const fallbackResult = await fetchFallbackLyrics({
+                    artist: songArtist,
+                    title: songTitle
+                });
 
-                    const fallbackLyrics = fallbackResponse?.data?.lyrics?.trim();
-                    if (fallbackLyrics) {
-                        return res.status(200).json({
-                            lyrics: fallbackLyrics.replace(/\n{3,}/g, '\n\n'),
-                            source: 'lyrics.ovh fallback',
-                            fallback: true
-                        });
-                    }
-                } catch (fallbackError) {
-                    console.error('[Serverless] Fallback lyrics provider error:', fallbackError.message);
+                if (fallbackResult?.lyrics) {
+                    return res.status(200).json({
+                        lyrics: fallbackResult.lyrics,
+                        source: fallbackResult.source,
+                        fallback: true
+                    });
                 }
             }
 
